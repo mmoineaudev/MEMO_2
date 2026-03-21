@@ -1,0 +1,8 @@
+dd/MM/yyyy HH:mm;Description;Activity Type;Status;Time Spent;Comment
+20/03/2024 08:30;Review project requirements;ADMIN;DONE;0.1;Understand the specification
+20/03/2024 09:30;Design MVC architecture;DEV;DONE;0.2;Plan the application structure
+20/03/2024 11:00;Create Maven project structure;DEV;DONE;0.15;Initialize pom.xml and directories
+20/03/2024 13:00;Team meeting;CEREMONY;DONE;0.25;Daily standup and planning
+20/03/2024 14:30;Research Swing components;LEARNING;DONE;0.3;Study JList, JTable, JSplitPane
+20/03/2024 16:00;Implement MainGUI skeleton;DEV;DONE;0.2;Basic window layout with panels
+20/03/2024 17:30;Code review;TEST;DONE;0.1;Review initial implementation

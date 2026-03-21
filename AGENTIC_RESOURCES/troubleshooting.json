@@ -1,0 +1,54 @@
+{
+  "skills": [
+    {
+      "id": "UC01_maven_setup",
+      "description": "Initialize Maven project structure with proper directory layout and pom.xml configuration for Java Swing applications",
+      "detection": "Verify existence of src/main/java, src/main/resources directories and pom.xml file with Java version 11+ and Swing dependencies configured",
+      "type": "project_setup",
+      "solutioning": "Create standard Maven directory structure with pom.xml containing Java compiler plugin configured for UTF-8 encoding, source/target versions set to 11 or higher, and include dependencies for Java Swing UI development. Add application launcher configuration for easy startup.",
+      "frequency_encountered": 1,
+      "last_updated": "2026-03-21T15:36:10Z",
+      "related_skills": ["UC02_gui_design", "git_workflow"]
+    },
+    {
+      "id": "UC02_gui_architecture",
+      "description": "Design and implement main GUI window with resizable panels using JSplitPane and proper layout management",
+      "detection": "Check for JFrame implementation with BorderLayout, presence of menu/toolbar components, status bar functionality, and panel resize capability testing",
+      "type": "architectural_design",
+      "solutioning": "Implement main window as JFrame with configurable initial size (1200x800), use JSplitPane for creating resizable left-center-right panels. Include menu/toolbar with actions for New Entry, Search, Time Summary, and Settings. Add status bar displaying current file and total entries count. Persist window state for consistent user experience.",
+      "frequency_encountered": 1,
+      "last_updated": "2026-03-21T15:36:10Z",
+      "related_skills": ["UC01_maven_setup", "UC03_data_loading"]
+    },
+    {
+      "id": "git_workflow",
+      "description": "Maintain consistent git workflow with branch management and commit tracking for agentic development",
+      "detection": "Monitor git status for unsaved files, verify branch consistency, track checklist items with associated commit hashes",
+      "type": "workflow_management",
+      "solutioning": "Stay on master branch for all developments. Before each commit, verify no unsaved files exist using git status. Stage all documentation and code changes with 'git add .'. Use current checklist item label as commit message enriched with advancement details. Add items to .gitignore as needed during development. Push changes to origin regularly. Create task_fix branches from specific commits when issues require resolution.",
+      "frequency_encountered": 1,
+      "last_updated": "2026-03-21T15:36:10Z",
+      "related_skills": ["UC01_maven_setup", "troubleshooting_maintenance"]
+    },
+    {
+      "id": "troubleshooting_maintenance",
+      "description": "Maintain troubleshooting.json as central knowledge base for problem detection and solutioning in agentic development",
+      "detection": "Monitor for unexpected tool call behavior, operational issues requiring documentation, and periodic review of existing skills for duplication or enhancement needs",
+      "type": "knowledge_management",
+      "solutioning": "Initialize troubleshooting.json when absent with mkdir -p AGENTIC_RESOURCES/ && touch file. When adding new skills, check for similar existing skills to avoid duplication by merging overlapping content. Keep skill descriptions concise and generic for long-term efficiency. Increment frequency_encountered counter each time a skill is referenced. Update last_updated timestamp with ISO8601 format when modifications occur. Maintain related_skills arrays for cross-referencing contextual solutions.",
+      "frequency_encountered": 1,
+      "last_updated": "2026-03-21T15:36:10Z",
+      "related_skills": ["git_workflow", "UC01_maven_setup"]
+    },
+    {
+      "id": "clean_code_principles",
+      "description": "Apply Clean Code principles including script creation for repetitive tasks, TODO comments, small file design, and compiler-driven development",
+      "detection": "Identify opportunities for script automation, missing TODO markers, file size optimization needs, and areas requiring comprehensive compiler validation or unit testing",
+      "type": "code_quality",
+      "solutioning": "Create scripts in dedicated project folders for agentic repetitive tasks such as formatting issues, bracket management, and duplicate detection. Utilize //TODO comments strategically to enable agent to locate open issues efficiently. Design with small files to minimize tool failure impacts. Leverage extensive compiler validation and unit tests throughout development cycle. Follow Clean Code guidelines by avoiding descriptive comments in favor of self-documenting code. Prioritize code re-creation over refactoring when volume exceeds 50%. Emphasize design pattern adoption. Minimize external dependencies while maintaining quality through selective use of high-value libraries like apache.commons.",
+      "frequency_encountered": 1,
+      "last_updated": "2026-03-21T15:36:10Z",
+      "related_skills": ["UC01_maven_setup", "UC02_gui_architecture"]
+    }
+  ]
+}

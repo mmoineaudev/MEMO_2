@@ -1,0 +1,7 @@
+dd/MM/yyyy HH:mm;Description;Activity Type;Status;Time Spent;Comment
+21/03/2024 09:00;Set up development environment;DEV;DONE;0.125;Initial project setup
+21/03/2024 10:30;Implement file scanner utility;DEV;DONE;0.25;Created FileScanner class for CSV file detection
+21/03/2024 12:00;Lunch break;NOTE;DONE;0.0;Daily break
+21/03/2024 13:00;Design ActivityEntry model;DEV;DONE;0.2;Created model class with CSV parsing
+21/03/2024 14:30;Build FileListController;DEV;DOING;0.15;Managing file list panel display
+21/03/2024 15:45;Unit testing and verification;TEST;TODO;0.1;Need to verify file loading
