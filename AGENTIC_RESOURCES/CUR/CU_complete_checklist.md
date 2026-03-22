@@ -11,11 +11,4 @@ In current project directory there is a `AGENTIC_RESOURCES/checklist.md` file th
     * Add the commit hash to any list item change for allowing targetted git operations
 * Continue as long as they are still unchecked items.
 
-## Task Fix Workflow
 
-If an issue is identified with a completed checklist item:
-1. Note the commit hash associated with the checklist item
-2. Create a `[task]_fix` branch from that commit
-3. Attempt the fix
-4. Merge if fix succeeds
-5. Document the fix in the checklist with the new commit hash
