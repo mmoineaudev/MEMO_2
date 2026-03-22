@@ -572,11 +572,11 @@ The solution encompasses:
 
 # Use Case: UC11 Implement Entry Detail View
 
-* [ ] Create detail panel showing full entry information
-* [ ] Display all fields: project, activity type, description, status, comment, timestamp, time spent
-* [ ] Format time spent as both proportional days and hours/minutes
-* [ ] Allow clicking entry in list to view details
-* [ ] Test: Verify all fields display correctly
+* [x] Create detail panel showing full entry information
+* [x] Display all fields: project, activity type, description, status, comment, timestamp, time spent
+* [x] Format time spent as both proportional days and hours/minutes
+* [x] Allow clicking entry in list to view details
+* [x] Test: Verify all fields display correctly
 
 ## CHARACTERISTIC INFORMATION
 
@@ -614,11 +614,11 @@ The solution encompasses:
 
 # Use Case: UC12 Implement Entry Edit/Delete Functionality
 
-* [ ] Allow editing existing entries
-* [ ] Allow deleting entries with confirmation
-* [ ] Maintain edit history or backup before changes
-* [ ] Update time calculations after edit/delete
-* [ ] Test: Verify edits save and deletions work safely
+* [x] Allow editing existing entries
+* [x] Allow deleting entries with confirmation
+* [x] Maintain edit history or backup before changes
+* [x] Update time calculations after edit/delete
+* [x] Test: Verify edits save and deletions work safely
 
 ## CHARACTERISTIC INFORMATION
 
