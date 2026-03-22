@@ -6,6 +6,7 @@ import com.memo_v2.view.NewEntryDialog;
 import com.memo_v2.view.SearchDialog;
 import com.memo_v2.view.SummaryDialog;
 import com.memo_v2.view.SettingsDialog;
+import com.memo_v2.view.EditDeleteDialog;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
@@ -133,6 +134,17 @@ public class MainFrame extends JFrame {
         
         JScrollPane scrollPane = new JScrollPane(detailTextArea);
         panel.add(scrollPane, BorderLayout.CENTER);
+        
+        // Button panel for edit/delete
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton editButton = new JButton("Edit");
+        editButton.addActionListener(e -> showEditDialog());
+        JButton deleteButton = new JButton("Delete");
+        deleteButton.addActionListener(e -> showDeleteConfirmation());
+        buttonPanel.add(editButton);
+        buttonPanel.add(deleteButton);
+        
+        panel.add(buttonPanel, BorderLayout.SOUTH);
         
         return panel;
     }
@@ -283,5 +295,37 @@ public class MainFrame extends JFrame {
     
     private void showSettingsDialog() {
         new SettingsDialog(MainFrame.this).setVisible(true);
+    }
+    
+    private void showEditDialog() {
+        int selectedRow = entriesTable.getSelectedRow();
+        if (selectedRow >= 0 && currentFile != null) {
+            ActivityEntry entry = currentFile.getEntries().get(selectedRow);
+            new EditDeleteDialog(MainFrame.this, entry, currentFile).setVisible(true);
+            // Refresh the table
+            loadSelectedFile(currentFile.getFilePath());
+        } else {
+            JOptionPane.showMessageDialog(this, "Please select an entry to edit", 
+                "No Entry Selected", JOptionPane.WARNING_MESSAGE);
+        }
+    }
+    
+    private void showDeleteConfirmation() {
+        int selectedRow = entriesTable.getSelectedRow();
+        if (selectedRow >= 0 && currentFile != null) {
+            ActivityEntry entry = currentFile.getEntries().get(selectedRow);
+            String message = String.format("Are you sure you want to delete this entry?\n\n" +
+                "Type: %s\nDescription: %s", 
+                entry.getActivityType(), entry.getDescription());
+            int result = JOptionPane.showConfirmDialog(this, message, 
+                "Confirm Delete", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+            if (result == JOptionPane.YES_OPTION) {
+                currentFile.getEntries().remove(selectedRow);
+                loadSelectedFile(currentFile.getFilePath());
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "Please select an entry to delete", 
+                "No Entry Selected", JOptionPane.WARNING_MESSAGE);
+        }
     }
 }
