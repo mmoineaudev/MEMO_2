@@ -4,7 +4,7 @@ REM Compiles if JAR is absent, then runs the application
 
 cd /d "%~dp0"
 
-set JAR_FILE=target\memo_v2-1.0-SNAPSHOT.jar
+set JAR_FILE=target\MEMO_V2-1.0-SNAPSHOT.jar
 
 if not exist "%JAR_FILE%" (
     echo [INFO] JAR not found (%JAR_FILE%). Building project...

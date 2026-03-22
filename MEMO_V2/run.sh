@@ -4,7 +4,7 @@
 
 cd "$(dirname "$0")"
 
-JAR_FILE="target/memo_v2-1.0-SNAPSHOT.jar"
+JAR_FILE="target/MEMO_V2-1.0-SNAPSHOT.jar"
 
 if [ ! -f "$JAR_FILE" ]; then
     echo "[INFO] JAR not found ($JAR_FILE). Building project..."
