@@ -55,9 +55,6 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
                 <version>3.3.0</version>
                 <configuration>
                     <mainClass>com.memo_v2.Main</mainClass>
-                    <manifest>
-                        <addManifest>true</addManifest>
-                    </manifest>
                 </configuration>
             </plugin>
         </plugins>
