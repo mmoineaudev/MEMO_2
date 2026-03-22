@@ -61,9 +61,9 @@ class ActivityTrackerTest {
         List<String> descriptions = tracker.getLastDistinctDescriptions(5);
         
         assertEquals(3, descriptions.size());
-        assertEquals("Task C", descriptions.get(0)); // Most recent
-        assertEquals("Task A", descriptions.get(1)); // From second file (first entry)
-        assertEquals("Task B", descriptions.get(2)); // From first file
+        assertEquals("Task A", descriptions.get(0)); // Most recent (last entry of newest file)
+        assertEquals("Task C", descriptions.get(1)); // First entry of newest file
+        assertEquals("Task B", descriptions.get(2)); // Last entry of oldest file
     }
     
     @Test
