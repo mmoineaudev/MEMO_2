@@ -2,11 +2,13 @@ package com.memo_v2.view;
 
 import com.memo_v2.model.ActivityEntry;
 import com.memo_v2.model.CSVFile;
+import java.time.LocalDate;
 import com.memo_v2.view.NewEntryDialog;
 import com.memo_v2.view.SearchDialog;
 import com.memo_v2.view.SummaryDialog;
 import com.memo_v2.view.SettingsDialog;
 import com.memo_v2.view.EditDeleteDialog;
+import com.memo_v2.view.DateRangeDialog;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
@@ -28,6 +30,9 @@ public class MainFrame extends JFrame {
     private String storageDirectory = "./log";
     private List<CSVFile> loadedFiles = new ArrayList<>();
     private CSVFile currentFile;
+
+    // Date range filter
+    private LocalDate filterStartDate, filterEndDate;
     
     public MainFrame() {
         setTitle("MEMO_V2 - Activity Tracker");
@@ -96,7 +101,17 @@ public class MainFrame extends JFrame {
     private JPanel createEntriesPanel() {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBorder(BorderFactory.createTitledBorder("Activity Entries"));
-        
+
+        // Filter toolbar
+        JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        filterPanel.add(new JLabel("Filter:"));
+        JButton dateRangeButton = new JButton("Date Range...");
+        dateRangeButton.addActionListener(e -> showDateRangeDialog());
+        filterPanel.add(dateRangeButton);
+        JButton clearFilterButton = new JButton("Clear Filter");
+        clearFilterButton.addActionListener(e -> { filterStartDate = null; filterEndDate = null; loadSelectedFile(currentFile.getFilePath()); });
+        filterPanel.add(clearFilterButton);
+
         String[] columns = {"Timestamp", "Type", "Description", "Status", "Comment", "Time (days)"};
         entriesTableModel = new DefaultTableModel(columns, 0) {
             @Override
@@ -104,7 +119,7 @@ public class MainFrame extends JFrame {
                 return false;
             }
         };
-        
+
         entriesTable = new JTable(entriesTableModel);
         entriesTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         entriesTable.getSelectionModel().addListSelectionListener(e -> {
@@ -115,10 +130,11 @@ public class MainFrame extends JFrame {
                 }
             }
         });
-        
+
         JScrollPane scrollPane = new JScrollPane(entriesTable);
         panel.add(scrollPane, BorderLayout.CENTER);
-        
+        panel.add(filterPanel, BorderLayout.NORTH);
+
         return panel;
     }
     
@@ -234,8 +250,16 @@ public class MainFrame extends JFrame {
             currentFile = new CSVFile(filePath);
             currentFile.loadFromFile();
             entriesTableModel.setRowCount(0);
-            
+
             for (ActivityEntry entry : currentFile.getEntries()) {
+                // Apply date range filter if set
+                if (filterStartDate != null && filterEndDate != null) {
+                    java.time.LocalDate entryDate = entry.getTimestamp().toLocalDate();
+                    if (!entryDate.isEqual(filterStartDate) && !entryDate.isAfter(filterEndDate)) {
+                        continue;
+                    }
+                }
+
                 Object[] row = {
                     entry.getTimestampFormatted(),
                     entry.getActivityType(),
@@ -246,9 +270,15 @@ public class MainFrame extends JFrame {
                 };
                 entriesTableModel.addRow(row);
             }
-            
-            statusLabel.setText(String.format("File: %s | Entries: %d", 
-                currentFile.getProjectName(), currentFile.getEntries().size()));
+
+            int count = currentFile.getEntries().size();
+            if (filterStartDate != null && filterEndDate != null) {
+                statusLabel.setText(String.format("File: %s | Entries: %d (filtered)", 
+                    currentFile.getProjectName(), entriesTableModel.getRowCount()));
+            } else {
+                statusLabel.setText(String.format("File: %s | Entries: %d", 
+                    currentFile.getProjectName(), count));
+            }
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Error loading file: " + e.getMessage(), 
                 "Error", JOptionPane.ERROR_MESSAGE);
@@ -295,6 +325,18 @@ public class MainFrame extends JFrame {
     
     private void showSettingsDialog() {
         new SettingsDialog(MainFrame.this).setVisible(true);
+    }
+
+    private void showDateRangeDialog() {
+        DateRangeDialog dialog = new DateRangeDialog(MainFrame.this);
+        dialog.setVisible(true);
+        LocalDate start = dialog.getStartDate();
+        LocalDate end = dialog.getEndDate();
+        if (start != null && end != null) {
+            filterStartDate = start;
+            filterEndDate = end;
+            loadSelectedFile(currentFile.getFilePath());
+        }
     }
     
     private void showEditDialog() {
