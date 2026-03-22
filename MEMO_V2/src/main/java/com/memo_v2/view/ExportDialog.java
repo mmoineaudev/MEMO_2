@@ -4,6 +4,7 @@ import com.memo_v2.model.ActivityEntry;
 import com.memo_v2.model.CSVFile;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
