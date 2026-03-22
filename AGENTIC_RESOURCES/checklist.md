@@ -2,7 +2,11 @@
 
 ## Overall Goal
 
-Create a Maven-based Java Swing GUI application that transcodes an existing CLI activity tracker into a graphical interface with enhanced search functionality and weekly time calculations. The application serves as a timestamped notebook for daily activity logging with automatic time tracking per subject and date range.
+Create a Maven-based Java Swing GUI application. The application serves as a timestamped notebook for daily activity logging with automatic time tracking per subject and date range.
+
+Use git commit often.
+
+Update this document as a marker for your advancement. 
 
 ## Main Architectural and Technical Guidelines
 
