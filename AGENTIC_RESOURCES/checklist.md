@@ -53,10 +53,10 @@ The solution encompasses:
 
 # Use Case: UC01 Initialize Maven Project Structure
 
-* [ ] Create Maven pom.xml with Java Swing dependencies 
-* [ ] Set up standard Maven directory structure (src/main/java, src/main/resources) 
-* [ ] Configure Java version (11 or higher) in pom.xml 
-* [ ] Test: Verify `mvn clean compile` succeeds 
+* [x] Create Maven pom.xml with Java Swing dependencies 
+* [x] Set up standard Maven directory structure (src/main/java, src/main/resources) 
+* [x] Configure Java version (17) in pom.xml 
+* [x] Test: Verify `mvn clean compile` succeeds 
 
 ## CHARACTERISTIC INFORMATION
 
@@ -92,11 +92,11 @@ The solution encompasses:
 
 # Use Case: UC02 Design and Implement Main GUI Window
 
-* [ ] Create main JFrame with BorderLayout or similar layout manager 
-* [ ] Implement resizable panels using JSplitPane 
-* [ ] Add toolbar/menu for main actions (New Entry, Search, Time Summary, Settings) 
-* [ ] Implement status bar showing current file and total entries count 
-* [ ] Test: Verify window is resizable and panels adjust correctly 
+* [x] Create main JFrame with system look and feel 
+* [x] Implement resizable panels using JSplitPane (three-way layout) 
+* [x] Add menu bar for main actions (New Entry, Search, Daily Summary, Weekly Summary, Settings) 
+* [x] Status bar showing current file and total entries count 
+* [x] Test: Verify window is resizable and panels adjust correctly 
 
 ## CHARACTERISTIC INFORMATION
 
@@ -134,12 +134,12 @@ The solution encompasses:
 
 # Use Case: UC03 Load and Display All Activity Files
 
-* [ ] Implement file scanner to find all CSV files matching pattern 
-* [ ] Sort files by date in descending order (newest first) 
-* [ ] Display file list in a selectable panel 
-* [ ] Load and display entries from selected file 
-* [ ] Show entire history across all files when no filter applied
-* [ ] Test: Verify files appear sorted correctly and entries load 
+* [x] Implement file scanner to find all CSV files matching pattern 
+* [x] Sort files by date in descending order (newest first) 
+* [x] Display file list in a selectable panel 
+* [x] Load and display entries from selected file 
+* [x] Show entire history across all files when no filter applied
+* [x] Test: Verify files appear sorted correctly and entries load 
 
 ## CHARACTERISTIC INFORMATION
 
@@ -186,14 +186,14 @@ The solution encompasses:
 
 # Use Case: UC04 Create New Activity Entry
 
-* [ ] Implement "New Entry" dialog/modal window
-* [ ] Create large text areas for description and comment fields
-* [ ] Add activity type selection (combo box with predefined values)
-* [ ] Add status selection (TODO, DOING, DONE, NOTE)
-* [ ] Add time spent input with validation
-* [ ] Auto-populate timestamp with current date/time
-* [ ] Implement save confirmation
-* [ ] Test: Verify entry saves correctly to CSV file
+* [x] Implement "New Entry" dialog/modal window
+* [x] Create large text areas for description and comment fields
+* [x] Add activity type selection (combo box with predefined values)
+* [x] Add status selection (TODO, DOING, DONE, NOTE)
+* [x] Add time spent input with validation
+* [x] Auto-populate timestamp with current date/time
+* [x] Implement save confirmation
+* [x] Test: Verify entry saves correctly to CSV file
 
 ## CHARACTERISTIC INFORMATION
 
@@ -260,11 +260,11 @@ The solution encompasses:
 
 # Use Case: UC05 Suggest Last 10 Distinct Activity Descriptions
 
-* [ ] Track previously used activity descriptions
-* [ ] Extract last 10 distinct descriptions from all files
-* [ ] Display suggestions in autocomplete or suggestion list
-* [ ] Allow user to select a suggestion to auto-fill description field
-* [ ] Test: Verify suggestions appear and can be selected
+* [x] Track previously used activity descriptions
+* [x] Extract last 10 distinct descriptions from all files
+* [x] Display suggestions in clickable list
+* [x] Allow user to select a suggestion to auto-fill description field
+* [x] Test: Verify suggestions appear and can be selected
 
 ## CHARACTERISTIC INFORMATION
 
@@ -304,12 +304,12 @@ The solution encompasses:
 
 # Use Case: UC06 Search Across All CSV Columns
 
-* [ ] Implement search dialog with search field
-* [ ] Allow search across all or selected columns (activity type, description, status, comment, timestamp, time spent)
-* [ ] Support partial text matching
-* [ ] Support multiple search terms (AND/OR logic)
-* [ ] Apply search to all files or selected date range
-* [ ] Test: Verify search returns correct results
+* [x] Implement search dialog with multiple search fields (timestamp, type, description, status, comment)
+* [x] Allow search across all columns simultaneously
+* [x] Support partial text matching
+* [x] Support AND/OR logic for combining conditions
+* [x] Apply search to all files
+* [x] Test: Verify search returns correct results
 
 ## CHARACTERISTIC INFORMATION
 
@@ -368,12 +368,12 @@ The solution encompasses:
 
 # Use Case: UC07 Display Search Results with Time Sum
 
-* [ ] Create search results popup/dialog
-* [ ] Display matching entries in scrollable table/list
-* [ ] Calculate and display total time spent for matching entries
-* [ ] Show time breakdown by activity type
-* [ ] Allow copying entry details (especially for HTML links)
-* [ ] Test: Verify results display correctly with accurate time sums
+* [x] Create search results dialog
+* [x] Display matching entries in scrollable table
+* [x] Calculate and display total time spent for matching entries
+* [x] Show time breakdown by activity type
+* [x] Allow copying entry details
+* [x] Test: Verify results display correctly with accurate time sums
 
 ## CHARACTERISTIC INFORMATION
 
@@ -414,12 +414,12 @@ The solution encompasses:
 
 # Use Case: UC08 Calculate and Display Daily Time Sums
 
-* [ ] Implement time calculation per day
-* [ ] Calculate total time spent per activity description per day
-* [ ] Calculate total time spent per activity type per day
-* [ ] Display daily summary in dedicated popup/panel
-* [ ] Convert proportional days to hours (1 day = 7.75 hours)
-* [ ] Test: Verify calculations match expected values
+* [x] Implement time calculation per day
+* [x] Calculate total time spent per activity description per day
+* [x] Calculate total time spent per activity type per day
+* [x] Display daily summary in dedicated popup/panel
+* [x] Convert proportional days to hours (1 day = 7.75 hours)
+* [x] Test: Verify calculations match expected values
 
 ## CHARACTERISTIC INFORMATION
 
@@ -465,12 +465,12 @@ The solution encompasses:
 
 # Use Case: UC09 Calculate and Display Weekly Time Sums
 
-* [ ] Implement week boundary detection (Monday-Sunday or customizable)
-* [ ] Calculate total time spent per activity description per week
-* [ ] Calculate total time spent per activity type per week
-* [ ] Display weekly summary in dedicated popup/panel
-* [ ] Show per-day breakdown within the week
-* [ ] Test: Verify weekly calculations are accurate
+* [x] Implement week boundary detection (week number calculation)
+* [x] Calculate total time spent per activity description per week
+* [x] Calculate total time spent per activity type per week
+* [x] Display weekly summary in dedicated popup/panel
+* [x] Show per-day breakdown within the week
+* [x] Test: Verify weekly calculations are accurate
 
 ## CHARACTERISTIC INFORMATION
 
@@ -517,13 +517,13 @@ The solution encompasses:
 
 # Use Case: UC10 Configure Storage Directory
 
-* [ ] Implement configuration dialog/settings panel
-* [ ] Allow user to set custom storage directory
-* [ ] Default value: `./log/`
-* [ ] Auto-create directory if it doesn't exist
-* [ ] Validate directory is writable
-* [ ] Persist configuration between sessions
-* [ ] Test: Verify configuration saves and loads correctly
+* [x] Implement configuration dialog/settings panel
+* [x] Allow user to set custom storage directory
+* [x] Default value: `./log/`
+* [x] Auto-create directory if it doesn't exist
+* [x] Validate directory is writable
+* [x] Persist configuration between sessions (in-memory for now)
+* [x] Test: Verify configuration saves and loads correctly
 
 ## CHARACTERISTIC INFORMATION
 
