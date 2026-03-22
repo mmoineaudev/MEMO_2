@@ -47,10 +47,13 @@ public class MainFrame extends JFrame {
     }
     
     private void createUI() {
-        mainSplitPane.setBorder(new EmptyBorder(10, 10, 10, 10));
+        // Status bar
+        statusLabel = new JLabel("Ready");
+        statusLabel.setBorder(new EmptyBorder(5, 10, 5, 10));
         
         // Main split pane with three panels
         mainSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        mainSplitPane.setBorder(new EmptyBorder(10, 10, 10, 10));
         mainSplitPane.setResizeWeight(0.25);
         
         // Left panel - File list
@@ -69,11 +72,10 @@ public class MainFrame extends JFrame {
         JPanel rightPanel = createDetailPanel();
         centerSplitPane.setRightComponent(rightPanel);
         mainSplitPane.setRightComponent(centerSplitPane);
-        setContentPane(mainSplitPane);
         
-        // Status bar at bottom
-        statusLabel = new JLabel("Ready");
-        statusLabel.setBorder(new EmptyBorder(5, 10, 5, 10));
+        // Main container with split pane and status bar
+        setLayout(new BorderLayout());
+        add(mainSplitPane, BorderLayout.CENTER);
         add(statusLabel, BorderLayout.SOUTH);
     }
     
@@ -218,6 +220,21 @@ public class MainFrame extends JFrame {
         fileListModel.clear();
         loadedFiles.clear();
         
+        // Check for today's file and create it if absent
+        String projectName = "MEMO";
+        LocalDate today = java.time.LocalDate.now();
+        String todayFileName = String.format("%s_tracking_%04d%02d%02d.csv", 
+            projectName, today.getYear(), today.getMonthValue(), today.getDayOfMonth());
+        File todayFile = new File(storageDir, todayFileName);
+        if (!todayFile.exists()) {
+            try {
+                CSVFile newFile = new CSVFile(todayFile.getAbsolutePath());
+                newFile.createNewFile();
+            } catch (Exception e) {
+                System.err.println("Failed to create today's file: " + e.getMessage());
+            }
+        }
+        
         File[] files = storageDir.listFiles((dir, name) -> name.matches(".*_tracking_\\d{8}\\.csv"));
         if (files != null && files.length > 0) {
             List<File> fileList = new ArrayList<>();
@@ -225,8 +242,15 @@ public class MainFrame extends JFrame {
                 fileList.add(file);
             }
             
-            // Sort by date descending
+            // Sort by date descending, with today's file always first
             fileList.sort((f1, f2) -> {
+                boolean isToday1 = f1.getName().equals(todayFileName);
+                boolean isToday2 = f2.getName().equals(todayFileName);
+                
+                if (isToday1 && !isToday2) return -1;
+                if (!isToday1 && isToday2) return 1;
+                
+                // Otherwise sort by date descending
                 String name1 = f1.getName();
                 String name2 = f2.getName();
                 int date1 = Integer.parseInt(name1.substring(name1.lastIndexOf('_') + 1, name1.length() - 4));
@@ -241,6 +265,9 @@ public class MainFrame extends JFrame {
             }
             
             if (!loadedFiles.isEmpty()) {
+                // Select the first file (today's file) in the list
+                int selectedIndex = 0;
+                fileListView.setSelectedIndex(selectedIndex);
                 loadSelectedFile(loadedFiles.get(0).getFilePath());
             }
         }
@@ -294,7 +321,9 @@ public class MainFrame extends JFrame {
             sb.append("Activity Type: ").append(entry.getActivityType()).append("\n");
             sb.append("Description: ").append(entry.getDescription()).append("\n");
             sb.append("Status: ").append(entry.getStatus()).append("\n");
-            sb.append("Comment: ").append(entry.getComment()).append("\n");
+            // Word-wrap comment - replace \n with actual newlines
+            String comment = entry.getComment().replace("\\n", "\n");
+            sb.append("Comment: ").append(comment).append("\n");
             sb.append(String.format("Time Spent: %.3f days (%.2f hours)", 
                 entry.getTimeSpentDays(), entry.getTimeSpentHours()));
             detailTextArea.setText(sb.toString());
@@ -304,8 +333,8 @@ public class MainFrame extends JFrame {
     private void showNewEntryDialog() {
         if (currentFile != null) {
             new NewEntryDialog(MainFrame.this, currentFile).setVisible(true);
-            // Refresh the table
-            scanFiles();
+            // Refresh the table by reloading
+            loadSelectedFile(currentFile.getFilePath());
         } else {
             JOptionPane.showMessageDialog(this, "Please select a file first", 
                 "No File Selected", JOptionPane.WARNING_MESSAGE);
@@ -317,11 +346,24 @@ public class MainFrame extends JFrame {
     }
     
     private void showDailySummary() {
-        new SummaryDialog(MainFrame.this).setVisible(true);
+        if (currentFile != null) {
+            new SummaryDialog(MainFrame.this, currentFile).setVisible(true);
+        } else {
+            JOptionPane.showMessageDialog(this, "Please select a file first", 
+                "No File Selected", JOptionPane.WARNING_MESSAGE);
+        }
     }
 
     private void showWeeklySummary() {
-        new SummaryDialog(MainFrame.this).setVisible(true);
+        // Delegate to same dialog - menu item just sets default selection
+        if (currentFile != null) {
+            SummaryDialog dialog = new SummaryDialog(MainFrame.this, currentFile);
+            dialog.setInitialSummaryType("Weekly");
+            dialog.setVisible(true);
+        } else {
+            JOptionPane.showMessageDialog(this, "Please select a file first", 
+                "No File Selected", JOptionPane.WARNING_MESSAGE);
+        }
     }
     
     private void showSettingsDialog() {

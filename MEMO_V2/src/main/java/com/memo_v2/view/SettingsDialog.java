@@ -37,6 +37,7 @@ public class SettingsDialog extends JDialog {
         browseButton = new JButton("Browse...");
         browseButton.addActionListener(e -> {
             JFileChooser chooser = new JFileChooser();
+            chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             int ret = chooser.showOpenDialog(null);
             if (ret == JFileChooser.APPROVE_OPTION) {
                 File selectedDir = chooser.getSelectedFile();

@@ -3,11 +3,11 @@ package com.memo_v2.view;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.util.Calendar;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 public class DateRangeDialog extends JDialog {
-    private JSpinner startDateSpinner, endDateSpinner;
+    private JTextField startDateField, endDateField;
     private LocalDate selectedStartDate, selectedEndDate;
     
     public DateRangeDialog(Frame owner) {
@@ -26,33 +26,44 @@ public class DateRangeDialog extends JDialog {
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        
+        // Calculate last month's first day for default start date
+        LocalDate today = LocalDate.now();
+        LocalDate lastMonthStart = today.minusMonths(1).withDayOfMonth(1);
+        
         // Start date
         gbc.gridx = 0; gbc.gridy = 0;
         mainPanel.add(new JLabel("Start Date:"), gbc);
         gbc.gridx = 1;
-        startDateSpinner = createDateSpinner(LocalDate.now().getYear() - 1, LocalDate.now().getMonthValue(), LocalDate.now().getDayOfMonth());
-        mainPanel.add(startDateSpinner, gbc);
+        startDateField = new JTextField(lastMonthStart.format(formatter), 25);
+        mainPanel.add(startDateField, gbc);
         
         // End date
         gbc.gridx = 0; gbc.gridy = 1;
         mainPanel.add(new JLabel("End Date:"), gbc);
         gbc.gridx = 1;
-        endDateSpinner = createDateSpinner(LocalDate.now().getYear(), LocalDate.now().getMonthValue(), LocalDate.now().getDayOfMonth());
-        mainPanel.add(endDateSpinner, gbc);
+        endDateField = new JTextField(today.format(formatter), 25);
+        mainPanel.add(endDateField, gbc);
         
         // Buttons
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton applyButton = new JButton("Apply Filter");
         applyButton.addActionListener(e -> {
-            selectedStartDate = (LocalDate) startDateSpinner.getValue();
-            selectedEndDate = (LocalDate) endDateSpinner.getValue();
-            if (selectedStartDate.isAfter(selectedEndDate)) {
-                JOptionPane.showMessageDialog(DateRangeDialog.this, 
-                    "Start date must be before or equal to end date", 
-                    "Invalid Range", JOptionPane.ERROR_MESSAGE);
-                return;
+            try {
+                selectedStartDate = LocalDate.parse(startDateField.getText(), formatter);
+                selectedEndDate = LocalDate.parse(endDateField.getText(), formatter);
+                if (selectedStartDate.isAfter(selectedEndDate)) {
+                    JOptionPane.showMessageDialog(DateRangeDialog.this, 
+                        "Start date must be before or equal to end date", 
+                        "Invalid Range", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                dispose();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Invalid date format. Use dd/MM/yyyy.", 
+                    "Validation Error", JOptionPane.ERROR_MESSAGE);
             }
-            dispose();
         });
         buttonPanel.add(applyButton);
         
@@ -73,20 +84,6 @@ public class DateRangeDialog extends JDialog {
         mainPanel.add(buttonPanel, gbc);
         
         setContentPane(mainPanel);
-    }
-    
-    private JSpinner createDateSpinner(int year, int month, int day) {
-        SpinnerDateModel model = new SpinnerDateModel();
-        Calendar cal = Calendar.getInstance();
-        cal.set(year, month - 1, day);
-        java.util.Date start = cal.getTime();
-        cal.set(year, month - 1, day + 1);
-        java.util.Date end = cal.getTime();
-        model.setStart(start);
-        model.setEnd(end);
-        
-        JSpinner spinner = new JSpinner(model);
-        return spinner;
     }
     
     public LocalDate getStartDate() {

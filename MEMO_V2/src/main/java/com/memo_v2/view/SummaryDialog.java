@@ -8,6 +8,7 @@ import java.awt.*;
 import java.io.File;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,14 +16,21 @@ import java.util.Map;
 public class SummaryDialog extends JDialog {
     private JComboBox<String> summaryTypeCombo;
     private JTextArea resultsTextArea;
+    private CSVFile currentFile;
+    private String initialSummaryType = "Daily";
 
-    public SummaryDialog(Frame owner) {
+    public SummaryDialog(Frame owner, CSVFile currentFile) {
         super(owner, "Activity Summary", true);
+        this.currentFile = currentFile;
         setSize(700, 600);
         setLocationRelativeTo(owner);
         setModal(true);
 
         createUI();
+    }
+
+    public void setInitialSummaryType(String type) {
+        this.initialSummaryType = type;
     }
 
     private void createUI() {
@@ -34,6 +42,8 @@ public class SummaryDialog extends JDialog {
         topPanel.add(new JLabel("Summary Type:"));
         String[] types = {"Daily", "Weekly"};
         summaryTypeCombo = new JComboBox<>(types);
+        int initialIndex = "Weekly".equals(initialSummaryType) ? 1 : 0;
+        summaryTypeCombo.setSelectedIndex(initialIndex);
         topPanel.add(summaryTypeCombo);
         mainPanel.add(topPanel, BorderLayout.NORTH);
 
@@ -73,43 +83,38 @@ public class SummaryDialog extends JDialog {
     private String generateDailySummary() {
         StringBuilder sb = new StringBuilder();
         sb.append("=".repeat(60)).append("\n");
-        sb.append("DAILY ACTIVITY SUMMARY\n");
+        sb.append("DAILY ACTIVITY SUMMARY\n").append(currentFile.getProjectName()).append("\n");
         sb.append("=".repeat(60)).append("\n\n");
 
-        Map<LocalDate, Map<String, Double>> dailySums = new HashMap<>();
-        List<File> files = getAllCSVFiles();
+        // Group by date, then by description within each date
+        Map<LocalDate, Map<String, Double>> dailyByDesc = new HashMap<>();
 
-        for (File file : files) {
-            try {
-                CSVFile csvFile = new CSVFile(file.getAbsolutePath());
-                csvFile.loadFromFile();
-
-                for (ActivityEntry entry : csvFile.getEntries()) {
-                    String desc = entry.getDescription();
-                    double time = entry.getTimeSpentDays();
-                    // Use timestamp date part as key
-                    LocalDate date = entry.getTimestamp().toLocalDate();
-
-                    Map<String, Double> dayMap = dailySums.computeIfAbsent(date, k -> new HashMap<>());
-                    dayMap.put(desc, dayMap.getOrDefault(desc, 0.0) + time);
-                }
-            } catch (Exception e) {
-                // Skip unreadable files
-            }
+        for (ActivityEntry entry : currentFile.getEntries()) {
+            LocalDate date = entry.getTimestamp().toLocalDate();
+            String desc = entry.getDescription();
+            double time = entry.getTimeSpentDays();
+            
+            Map<String, Double> dayMap = dailyByDesc.computeIfAbsent(date, k -> new HashMap<>());
+            dayMap.put(desc, dayMap.getOrDefault(desc, 0.0) + time);
         }
 
-        for (LocalDate date : dailySums.keySet()) {
+        for (LocalDate date : dailyByDesc.keySet()) {
             sb.append("\n").append(date).append(":\n");
             double total = 0.0;
-            Map<String, Double> dayMap = dailySums.get(date);
-            for (Map.Entry<String, Double> descEntry : dayMap.entrySet()) {
-                String desc = descEntry.getKey();
-                double timeDays = descEntry.getValue();
+            Map<String, Double> descMap = dailyByDesc.get(date);
+            
+            // Sort descriptions alphabetically
+            List<String> sortedDeps = new ArrayList<>(descMap.keySet());
+            Collections.sort(sortedDeps);
+            
+            for (String desc : sortedDeps) {
+                double timeDays = descMap.get(desc);
                 sb.append("  ").append(desc).append(": ");
-                sb.append(String.format("%.3f days (%.2f hours)\n", timeDays, timeDays * 24));
+                sb.append(String.format("%.3f days (%.2f hours)\n", timeDays, timeDays * 7.75));
                 total += timeDays;
             }
-            sb.append("  Total: ").append(String.format("%.3f days (%.2f hours)", total, total * 24)).append("\n");
+            
+            sb.append("  Total: ").append(String.format("%.3f days (%.2f hours)", total, total * 7.75)).append("\n");
         }
 
         return sb.toString();
@@ -118,59 +123,42 @@ public class SummaryDialog extends JDialog {
     private String generateWeeklySummary() {
         StringBuilder sb = new StringBuilder();
         sb.append("=".repeat(60)).append("\n");
-        sb.append("WEEKLY ACTIVITY SUMMARY\n");
+        sb.append("WEEKLY ACTIVITY SUMMARY\n").append(currentFile.getProjectName()).append("\n");
         sb.append("=".repeat(60)).append("\n\n");
 
-        Map<String, Map<String, Double>> weeklySums = new HashMap<>();
-        List<File> files = getAllCSVFiles();
+        // Group by week, then by description within each week
+        Map<String, Map<String, Double>> weeklyByDesc = new HashMap<>();
 
-        for (File file : files) {
-            try {
-                CSVFile csvFile = new CSVFile(file.getAbsolutePath());
-                csvFile.loadFromFile();
-
-                for (ActivityEntry entry : csvFile.getEntries()) {
-                    String desc = entry.getDescription();
-                    double time = entry.getTimeSpentDays();
-                    LocalDate date = entry.getTimestamp().toLocalDate();
-                    // Week key: "YYYY-Www"
-                    int week = date.getDayOfYear();
-                    int weekNum = (week - 1) / 7 + 1;
-                    String weekKey = date.getYear() + "-W" + String.format("%02d", weekNum);
-
-                    Map<String, Double> weekMap = weeklySums.computeIfAbsent(weekKey, k -> new HashMap<>());
-                    weekMap.put(desc, weekMap.getOrDefault(desc, 0.0) + time);
-                }
-            } catch (Exception e) {
-                // Skip unreadable files
-            }
+        for (ActivityEntry entry : currentFile.getEntries()) {
+            LocalDate date = entry.getTimestamp().toLocalDate();
+            String desc = entry.getDescription();
+            double time = entry.getTimeSpentDays();
+            int weekNum = (date.getDayOfYear() - 1) / 7 + 1;
+            String weekKey = date.getYear() + "-W" + String.format("%02d", weekNum);
+            
+            Map<String, Double> weekMap = weeklyByDesc.computeIfAbsent(weekKey, k -> new HashMap<>());
+            weekMap.put(desc, weekMap.getOrDefault(desc, 0.0) + time);
         }
 
-        for (String weekKey : weeklySums.keySet()) {
+        for (String weekKey : weeklyByDesc.keySet()) {
             sb.append("\n").append(weekKey).append(":\n");
             double total = 0.0;
-            Map<String, Double> weekMap = weeklySums.get(weekKey);
-            for (Map.Entry<String, Double> descEntry : weekMap.entrySet()) {
-                String desc = descEntry.getKey();
-                double timeDays = descEntry.getValue();
+            Map<String, Double> descMap = weeklyByDesc.get(weekKey);
+            
+            // Sort descriptions alphabetically
+            List<String> sortedDeps = new ArrayList<>(descMap.keySet());
+            Collections.sort(sortedDeps);
+            
+            for (String desc : sortedDeps) {
+                double timeDays = descMap.get(desc);
                 sb.append("  ").append(desc).append(": ");
-                sb.append(String.format("%.3f days (%.2f hours)\n", timeDays, timeDays * 24));
+                sb.append(String.format("%.3f days (%.2f hours)\n", timeDays, timeDays * 7.75));
                 total += timeDays;
             }
-            sb.append("  Total: ").append(String.format("%.3f days (%.2f hours)", total, total * 24)).append("\n");
+            
+            sb.append("  Total: ").append(String.format("%.3f days (%.2f hours)", total, total * 7.75)).append("\n");
         }
 
         return sb.toString();
-    }
-
-    private List<File> getAllCSVFiles() {
-        java.util.List<File> files = new ArrayList<>();
-        File storageDir = new File("./log");
-        if (storageDir.exists()) {
-            for (File f : storageDir.listFiles((d, n) -> n.matches(".*_tracking_\\d{8}\\.csv"))) {
-                files.add(f);
-            }
-        }
-        return files;
     }
 }

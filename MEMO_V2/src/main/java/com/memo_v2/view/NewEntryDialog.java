@@ -21,7 +21,7 @@ public class NewEntryDialog extends JDialog {
     
     public NewEntryDialog(Frame owner, CSVFile currentFile) {
         super(owner, "New Activity Entry", true);
-        setSize(700, 600);
+        setSize(800, 750);
         setLocationRelativeTo(owner);
         setModal(true);
         
@@ -62,7 +62,7 @@ public class NewEntryDialog extends JDialog {
         gbc.gridx = 0; gbc.gridy = 3;
         mainPanel.add(new JLabel("Recent Descriptions (click to copy):"), gbc);
         gbc.gridx = 1;
-        suggestionsTextArea = new JTextArea(5, 45);
+        suggestionsTextArea = new JTextArea(8, 45);
         suggestionsTextArea.setEditable(false);
         suggestionsTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
         suggestionsTextArea.setBorder(BorderFactory.createLineBorder(Color.GRAY));
@@ -91,7 +91,7 @@ public class NewEntryDialog extends JDialog {
         gbc.gridx = 0; gbc.gridy = 5;
         mainPanel.add(new JLabel("Comment:"), gbc);
         gbc.gridx = 1;
-        commentArea = new JTextArea(5, 45);
+        commentArea = new JTextArea(10, 45);
         commentArea.setLineWrap(true);
         commentArea.setWrapStyleWord(true);
         JScrollPane commentScroll = new JScrollPane(commentArea);
@@ -131,9 +131,19 @@ public class NewEntryDialog extends JDialog {
         setContentPane(mainPanel);
         loadSuggestions();
     }
+
+    @Override
+    public void setVisible(boolean b) {
+        super.setVisible(b);
+        if (b) {
+            // Force revalidation to fix initial sizing of text areas
+            suggestionsTextArea.revalidate();
+            commentArea.revalidate();
+        }
+    }
     
     private void loadSuggestions() {
-        ActivityTracker tracker = new ActivityTracker();
+        ActivityTracker tracker = new ActivityTracker("./log");
         List<String> descriptions = tracker.getLastDistinctDescriptions(10);
         StringBuilder sb = new StringBuilder();
         for (String desc : descriptions) {
@@ -167,7 +177,9 @@ public class NewEntryDialog extends JDialog {
         entry.setActivityType((String) activityTypeCombo.getSelectedItem());
         entry.setDescription(description);
         entry.setStatus((String) statusCombo.getSelectedItem());
-        entry.setComment(commentArea.getText());
+        // Escape newlines in comment for CSV storage
+        String rawComment = commentArea.getText();
+        entry.setComment(rawComment.replace("\n", "\\n"));
         entry.setTimeSpentDays(Double.parseDouble(timeSpentField.getText()));
         
         // Add to current file

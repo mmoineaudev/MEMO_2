@@ -127,7 +127,9 @@ public class CSVFile {
             entry.setActivityType(parts[1]);
             entry.setDescription(parts[2]);
             entry.setStatus(parts[3]);
-            entry.setComment(parts[4]);
+            // Unescape newlines in comment
+            String rawComment = parts[4].replace("\\n", "\n");
+            entry.setComment(rawComment);
             entry.setTimeSpentDays(Double.parseDouble(parts[5]));
             return entry;
         } catch (Exception e) {
