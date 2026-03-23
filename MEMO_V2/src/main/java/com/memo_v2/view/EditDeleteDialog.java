@@ -94,7 +94,9 @@ public class EditDeleteDialog extends JDialog {
             editedEntry.setActivityType((String) typeCombo.getSelectedItem());
             editedEntry.setDescription(descArea.getText());
             editedEntry.setStatus((String) statusCombo.getSelectedItem());
-            editedEntry.setComment(commentArea.getText());
+            // Escape newlines in comment for CSV storage
+            String rawComment = commentArea.getText();
+            editedEntry.setComment(rawComment.replace("\n", "\\n"));
             try {
                 double time = Double.parseDouble(timeField.getText());
                 editedEntry.setTimeSpentDays(time);

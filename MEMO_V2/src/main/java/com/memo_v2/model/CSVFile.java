@@ -139,12 +139,14 @@ public class CSVFile {
     }
     
     private String toCSVLine(ActivityEntry entry) {
+        // Escape newlines in comment for CSV storage
+        String escapedComment = entry.getComment().replace("\n", "\\n");
         return String.format("%s;%s;%s;%s;%s;%.6f",
             entry.getTimestampFormatted(),
             entry.getActivityType(),
             entry.getDescription(),
             entry.getStatus(),
-            entry.getComment(),
+            escapedComment,
             entry.getTimeSpentDays());
     }
 }
