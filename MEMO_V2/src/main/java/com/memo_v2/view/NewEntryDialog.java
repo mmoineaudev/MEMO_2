@@ -92,6 +92,7 @@ public class NewEntryDialog extends JDialog {
         mainPanel.add(new JLabel("Comment:"), gbc);
         gbc.gridx = 1;
         commentArea = new JTextArea(10, 45);
+        commentArea.setEditable(true);
         commentArea.setLineWrap(true);
         commentArea.setWrapStyleWord(true);
         JScrollPane commentScroll = new JScrollPane(commentArea);
@@ -139,6 +140,8 @@ public class NewEntryDialog extends JDialog {
             // Force revalidation to fix initial sizing of text areas
             suggestionsTextArea.revalidate();
             commentArea.revalidate();
+            // Request focus on comment area for better UX
+            SwingUtilities.invokeLater(() -> commentArea.requestFocusInWindow());
         }
     }
     

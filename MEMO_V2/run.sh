@@ -1,6 +1,6 @@
 #!/bin/bash
 # MEMO_V2 Launcher Script
-# Compiles if needed, then runs the application
+# Compiles and runs the application
 
 cd "$(dirname "$0")"
 
@@ -11,6 +11,5 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-echo "[INFO] Build successful!"
-echo "[INFO] To run the GUI, execute: mvn exec:java -Dexec.mainClass=com.memo_v2.Main"
-echo "[INFO] (Requires X11 DISPLAY variable for Swing UI)"
+echo "[INFO] Build successful! Starting application..."
+mvn exec:java -Dexec.mainClass=com.memo_v2.Main
