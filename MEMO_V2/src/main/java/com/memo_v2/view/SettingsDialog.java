@@ -64,15 +64,16 @@ public class SettingsDialog extends JDialog {
             }
             // Convert to relative path for consistent storage
             String userHome = System.getProperty("user.home");
-            File projectRoot = new File("..").getAbsoluteFile();
+            String userDir = System.getProperty("user.dir");
+            File projectRoot = new File(userDir).getAbsoluteFile();
             File selectedDir = dirFile.getAbsoluteFile();
             
-            // Check if the directory is within the project
+            // Check if the directory is within the current working directory
             if (selectedDir.getAbsolutePath().startsWith(projectRoot.getAbsolutePath())) {
                 String relativePath = projectRoot.toURI()
                     .relativize(selectedDir.toURI())
                     .getPath();
-                dir = relativePath;
+                dir = "./" + relativePath;
             }
             
             // Save settings to config file

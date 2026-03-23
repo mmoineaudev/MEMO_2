@@ -216,11 +216,11 @@ public class MainFrame extends JFrame {
     }
     
     private void scanFiles() {
-        // Resolve relative path from project root
+        // Resolve relative path from current working directory
         String resolvedPath;
         if (storageDirectory.startsWith("./")) {
-            File projectRoot = new File("..").getAbsoluteFile().getParentFile();
-            resolvedPath = new File(projectRoot, storageDirectory).getPath();
+            String userDir = System.getProperty("user.dir");
+            resolvedPath = new File(userDir, storageDirectory).getAbsolutePath();
         } else {
             resolvedPath = storageDirectory;
         }
