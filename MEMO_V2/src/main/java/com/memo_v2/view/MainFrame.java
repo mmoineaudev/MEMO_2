@@ -418,7 +418,13 @@ public class MainFrame extends JFrame {
                 "Confirm Delete", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
             if (result == JOptionPane.YES_OPTION) {
                 currentFile.getEntries().remove(selectedRow);
-                loadSelectedFile(currentFile.getFilePath());
+                try {
+                    currentFile.saveToFile();
+                    loadSelectedFile(currentFile.getFilePath());
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(this, "Error saving file: " + e.getMessage(), 
+                        "Error", JOptionPane.ERROR_MESSAGE);
+                }
             }
         } else {
             JOptionPane.showMessageDialog(this, "Please select an entry to delete", 
