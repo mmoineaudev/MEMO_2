@@ -91,12 +91,17 @@ public class EditDeleteDialog extends JDialog {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton saveButton = new JButton("Save Changes");
         saveButton.addActionListener(e -> {
-            editedEntry.setActivityType((String) typeCombo.getSelectedItem());
-            editedEntry.setDescription(descArea.getText());
+            // Sanitize input before saving
+            String sanitizedActivityType = com.memo_v2.util.InputSanitizer.sanitize((String) typeCombo.getSelectedItem());
+            String sanitizedDescription = com.memo_v2.util.InputSanitizer.sanitize(descArea.getText());
+            String rawComment = commentArea.getText();
+            String sanitizedComment = com.memo_v2.util.InputSanitizer.sanitize(rawComment);
+            
+            editedEntry.setActivityType(sanitizedActivityType);
+            editedEntry.setDescription(sanitizedDescription);
             editedEntry.setStatus((String) statusCombo.getSelectedItem());
             // Escape newlines in comment for CSV storage
-            String rawComment = commentArea.getText();
-            editedEntry.setComment(rawComment.replace("\n", "\\n"));
+            editedEntry.setComment(sanitizedComment.replace("\n", "\\n"));
             try {
                 double time = Double.parseDouble(timeField.getText());
                 editedEntry.setTimeSpentDays(time);

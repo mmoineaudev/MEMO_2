@@ -174,15 +174,18 @@ public class NewEntryDialog extends JDialog {
             return false;
         }
         
-        // Create entry
+        // Sanitize and escape for CSV storage
+        String sanitizedDescription = com.memo_v2.util.InputSanitizer.sanitize(description);
+        String rawComment = commentArea.getText();
+        String sanitizedComment = com.memo_v2.util.InputSanitizer.sanitize(rawComment);
+        
         ActivityEntry entry = new ActivityEntry();
         entry.setTimestamp(LocalDateTime.now());
         entry.setActivityType((String) activityTypeCombo.getSelectedItem());
-        entry.setDescription(description);
+        entry.setDescription(sanitizedDescription);
         entry.setStatus((String) statusCombo.getSelectedItem());
         // Escape newlines in comment for CSV storage
-        String rawComment = commentArea.getText();
-        entry.setComment(rawComment.replace("\n", "\\n"));
+        entry.setComment(sanitizedComment.replace("\n", "\\n"));
         entry.setTimeSpentDays(Double.parseDouble(timeSpentField.getText()));
         
         // Add to current file
