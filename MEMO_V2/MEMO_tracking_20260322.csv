@@ -2,3 +2,4 @@ timestamp;activity_type;description;status;comment;time_spent_days
 22/03/2026 12:57;DEV;hello there;TODO;lol;0.125000
 22/03/2026 13:00;DEV;hello there;TODO;lolol;0.500000
 22/03/2026 13:10;DEV;hello;TODO;;0.125000
+23/03/2026 01:30;DEV;test;TODO;hello\nhello;0.125000

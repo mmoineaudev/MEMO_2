@@ -4,6 +4,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.io.File;
+import com.memo_v2.config.ConfigManager;
 
 public class SettingsDialog extends JDialog {
     private JTextField storageDirField;
@@ -16,6 +17,10 @@ public class SettingsDialog extends JDialog {
         setModal(true);
 
         createUI();
+    }
+
+    private void loadCurrentSettings() {
+        storageDirField.setText(ConfigManager.getStorageDirectory());
     }
 
     private void createUI() {
@@ -57,7 +62,21 @@ public class SettingsDialog extends JDialog {
                     "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            // Save settings (in a real app, persist to config file)
+            // Convert to relative path for consistent storage
+            String userHome = System.getProperty("user.home");
+            File projectRoot = new File("..").getAbsoluteFile();
+            File selectedDir = dirFile.getAbsoluteFile();
+            
+            // Check if the directory is within the project
+            if (selectedDir.getAbsolutePath().startsWith(projectRoot.getAbsolutePath())) {
+                String relativePath = projectRoot.toURI()
+                    .relativize(selectedDir.toURI())
+                    .getPath();
+                dir = relativePath;
+            }
+            
+            // Save settings to config file
+            ConfigManager.setStorageDirectory(dir);
             JOptionPane.showMessageDialog(this, "Settings saved!", "Success", 
                 JOptionPane.INFORMATION_MESSAGE);
             dispose();
@@ -72,6 +91,6 @@ public class SettingsDialog extends JDialog {
         mainPanel.add(buttonPanel, gbc);
 
         setContentPane(mainPanel);
-        storageDirField.setText("./log");
+        loadCurrentSettings();
     }
 }

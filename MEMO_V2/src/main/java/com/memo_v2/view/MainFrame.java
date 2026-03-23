@@ -17,6 +17,7 @@ import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import com.memo_v2.config.ConfigManager;
 
 public class MainFrame extends JFrame {
     private JSplitPane mainSplitPane;
@@ -28,7 +29,7 @@ public class MainFrame extends JFrame {
     private JTextArea detailTextArea;
     private JLabel statusLabel;
     
-    private String storageDirectory = "./log";
+    private String storageDirectory;
     private List<CSVFile> loadedFiles = new ArrayList<>();
     private CSVFile currentFile;
 
@@ -40,6 +41,9 @@ public class MainFrame extends JFrame {
         setSize(1200, 800);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationByPlatform(true);
+        
+        // Load storage directory from config
+        this.storageDirectory = ConfigManager.getStorageDirectory();
         
         createUI();
         setupMenuBar();
@@ -212,7 +216,15 @@ public class MainFrame extends JFrame {
     }
     
     private void scanFiles() {
-        File storageDir = new File(storageDirectory);
+        // Resolve relative path from project root
+        String resolvedPath;
+        if (storageDirectory.startsWith("./")) {
+            File projectRoot = new File("..").getAbsoluteFile().getParentFile();
+            resolvedPath = new File(projectRoot, storageDirectory).getPath();
+        } else {
+            resolvedPath = storageDirectory;
+        }
+        File storageDir = new File(resolvedPath);
         if (!storageDir.exists()) {
             storageDir.mkdirs();
         }
