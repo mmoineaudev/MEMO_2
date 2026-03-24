@@ -57,6 +57,7 @@ public class CSVFile {
     public void loadFromFile() throws IOException {
         entries.clear();
         File file = new File(filePath);
+        System.err.println("DEBUG CSVFile.loadFromFile: filePath=" + this.filePath + " file.exists=" + file.exists());
         if (!file.exists()) {
             createNewFile();
             return;
@@ -103,6 +104,8 @@ public class CSVFile {
     
     public void createNewFile() throws IOException {
         File file = new File(filePath);
+        System.err.println("DEBUG CSVFile: Creating file at " + file.getAbsolutePath());
+        System.err.println("DEBUG CSVFile: filePath=" + this.filePath);
         File parentDir = file.getParentFile();
         if (parentDir != null && !parentDir.exists()) {
             parentDir.mkdirs();

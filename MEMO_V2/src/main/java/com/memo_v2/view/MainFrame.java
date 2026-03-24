@@ -94,7 +94,12 @@ public class MainFrame extends JFrame {
             if (!e.getValueIsAdjusting()) {
                 String selected = fileListView.getSelectedValue();
                 if (selected != null) {
-                    loadSelectedFile(selected);
+                    for (CSVFile csvFile : loadedFiles) {
+                        if (csvFile.getFilePath().contains(selected)) {
+                            loadSelectedFile(csvFile.getFilePath());
+                            break;
+                        }
+                    }
                 }
             }
         });
@@ -220,11 +225,13 @@ public class MainFrame extends JFrame {
         String resolvedPath;
         if (storageDirectory.startsWith("./")) {
             String userDir = System.getProperty("user.dir");
+            System.err.println("DEBUG MainFrame: storageDirectory=" + storageDirectory + " user.dir=" + userDir);
             resolvedPath = new File(userDir, storageDirectory).getAbsolutePath();
         } else {
             resolvedPath = storageDirectory;
         }
         File storageDir = new File(resolvedPath);
+        System.err.println("DEBUG MainFrame: storageDir absolute path=" + storageDir.getAbsolutePath());
         if (!storageDir.exists()) {
             storageDir.mkdirs();
         }
@@ -238,6 +245,7 @@ public class MainFrame extends JFrame {
         String todayFileName = String.format("%s_tracking_%04d%02d%02d.csv", 
             projectName, today.getYear(), today.getMonthValue(), today.getDayOfMonth());
         File todayFile = new File(storageDir, todayFileName);
+        System.err.println("DEBUG MainFrame: todayFile path=" + todayFile.getAbsolutePath() + " exists=" + todayFile.exists());
         if (!todayFile.exists()) {
             try {
                 CSVFile newFile = new CSVFile(todayFile.getAbsolutePath());

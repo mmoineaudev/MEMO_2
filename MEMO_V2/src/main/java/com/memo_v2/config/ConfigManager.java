@@ -13,7 +13,7 @@ public class ConfigManager {
         try {
             File configFile = new File(CONFIG_FILE);
             if (!configFile.exists()) {
-                // Create default config file
+                System.err.println("DEBUG ConfigManager: Creating config at " + configFile.getAbsolutePath());
                 Properties props = new Properties();
                 props.setProperty(STORAGE_DIR_KEY, "./log");
                 try (OutputStream output = new FileOutputStream(configFile)) {
@@ -24,7 +24,9 @@ public class ConfigManager {
             Properties props = new Properties();
             try (InputStream input = new FileInputStream(configFile)) {
                 props.load(input);
-                return props.getProperty(STORAGE_DIR_KEY, "./log");
+                String result = props.getProperty(STORAGE_DIR_KEY, "./log");
+                System.err.println("DEBUG ConfigManager: Returning storage dir: " + result);
+                return result;
             }
         } catch (Exception e) {
             System.err.println("Failed to load config: " + e.getMessage());
