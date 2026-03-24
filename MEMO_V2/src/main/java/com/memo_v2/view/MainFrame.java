@@ -202,12 +202,9 @@ public class MainFrame extends JFrame {
         JMenuItem searchItem = new JMenuItem("Search...");
         searchItem.addActionListener(e -> showSearchDialog());
         viewMenu.add(searchItem);
-        JMenuItem dailySummaryItem = new JMenuItem("Daily Summary");
-        dailySummaryItem.addActionListener(e -> showDailySummary());
-        viewMenu.add(dailySummaryItem);
-        JMenuItem dateRangeSummaryItem = new JMenuItem("Date Range Summary");
-        dateRangeSummaryItem.addActionListener(e -> showDateRangeSummary());
-        viewMenu.add(dateRangeSummaryItem);
+        JMenuItem summaryItem = new JMenuItem("Summary...");
+        summaryItem.addActionListener(e -> showSummaryDialog());
+        viewMenu.add(summaryItem);
         menuBar.add(viewMenu);
         
         // Tools menu
@@ -413,26 +410,14 @@ public class MainFrame extends JFrame {
         new SearchDialog(MainFrame.this).setVisible(true);
     }
     
-   private void showDailySummary() {
+    private void showSummaryDialog() {
         if (currentFile != null) {
-            SummaryDialog dialog = new SummaryDialog(MainFrame.this, currentFile, loadedFiles);
-            dialog.setFilterActive(filterStartDate != null);
+            SummaryDialog dialog = new SummaryDialog(MainFrame.this, currentFile, loadedFiles, 
+                                                     filterStartDate, filterEndDate);
             dialog.setVisible(true);
         } else {
             JOptionPane.showMessageDialog(this, "Please select a file first", 
                 "No File Selected", JOptionPane.WARNING_MESSAGE);
-        }
-    }
-
-    private void showDateRangeSummary() {
-        if (currentFile != null) {
-            // Ensure entries are filtered by date range
-            loadSelectedFile(currentFile.getFilePath());
-            SummaryDialog dialog = new SummaryDialog(this, currentFile, loadedFiles);
-            dialog.setFilterActive(true);
-            dialog.setVisible(true);
-        } else {
-            JOptionPane.showMessageDialog(this, "Please select a file first", "No File Selected", JOptionPane.WARNING_MESSAGE);
         }
     }
     
