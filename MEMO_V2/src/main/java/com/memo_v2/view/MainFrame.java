@@ -205,9 +205,9 @@ public class MainFrame extends JFrame {
         JMenuItem dailySummaryItem = new JMenuItem("Daily Summary");
         dailySummaryItem.addActionListener(e -> showDailySummary());
         viewMenu.add(dailySummaryItem);
-        JMenuItem weeklySummaryItem = new JMenuItem("Weekly Summary");
-        weeklySummaryItem.addActionListener(e -> showWeeklySummary());
-        viewMenu.add(weeklySummaryItem);
+        JMenuItem dateRangeSummaryItem = new JMenuItem("Date Range Summary");
+        dateRangeSummaryItem.addActionListener(e -> showDateRangeSummary());
+        viewMenu.add(dateRangeSummaryItem);
         menuBar.add(viewMenu);
         
         // Tools menu
@@ -374,19 +374,20 @@ public class MainFrame extends JFrame {
         }
     }
 
-    private void showWeeklySummary() {
-        // Delegate to same dialog - menu item just sets default selection
+   private void showDateRangeSummary() {
         if (currentFile != null) {
-            SummaryDialog dialog = new SummaryDialog(MainFrame.this, currentFile);
-            dialog.setInitialSummaryType("Weekly");
+            // Ensure entries are filtered by date range
+            loadSelectedFile(currentFile.getFilePath());
+            SummaryDialog dialog = new SummaryDialog(this, currentFile);
+            dialog.setInitialSummaryType("Daily");
             dialog.setVisible(true);
         } else {
-            JOptionPane.showMessageDialog(this, "Please select a file first", 
-                "No File Selected", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Please select a file first", "No File Selected", JOptionPane.WARNING_MESSAGE);
         }
     }
+    }
     
-    private void showSettingsDialog() {
+   }\n    private void showSettingsDialog() {
         new SettingsDialog(MainFrame.this).setVisible(true);
     }
 
