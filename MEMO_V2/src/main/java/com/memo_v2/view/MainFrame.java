@@ -442,7 +442,18 @@ public class MainFrame extends JFrame {
         if (start != null && end != null) {
             filterStartDate = start;
             filterEndDate = end;
-            loadSelectedFile(currentFile.getFilePath());
+            scanFiles(); // Refresh file list with filter
+            if (currentFile != null) {
+                loadSelectedFile(currentFile.getFilePath());
+            }
+        } else {
+            // Clear filter
+            filterStartDate = null;
+            filterEndDate = null;
+            scanFiles(); // Refresh file list without filter
+            if (currentFile != null) {
+                loadSelectedFile(currentFile.getFilePath());
+            }
         }
     }
 
