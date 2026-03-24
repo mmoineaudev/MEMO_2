@@ -299,15 +299,25 @@ public class MainFrame extends JFrame {
             currentFile.loadFromFile();
             entriesTableModel.setRowCount(0);
 
-            for (ActivityEntry entry : currentFile.getEntries()) {
-                // Apply date range filter if set
-                if (filterStartDate != null && filterEndDate != null) {
+            List<ActivityEntry> allEntries = new ArrayList<>();
+            
+            // Collect all entries from all loaded files
+            for (CSVFile file : loadedFiles) {
+                allEntries.addAll(file.getEntries());
+            }
+            
+            // Filter by date range if set
+            if (filterStartDate != null && filterEndDate != null) {
+                allEntries.removeIf(entry -> {
                     java.time.LocalDate entryDate = entry.getTimestamp().toLocalDate();
-                    if (!entryDate.isEqual(filterStartDate) && !entryDate.isAfter(filterEndDate)) {
-                        continue;
-                    }
-                }
+                    return entryDate.isBefore(filterStartDate) || entryDate.isAfter(filterEndDate);
+                });
+            }
+            
+            // Sort by timestamp descending
+            allEntries.sort((e1, e2) -> e2.getTimestamp().compareTo(e1.getTimestamp()));
 
+            for (ActivityEntry entry : allEntries) {
                 Object[] row = {
                     entry.getTimestampFormatted(),
                     entry.getActivityType(),
@@ -319,13 +329,12 @@ public class MainFrame extends JFrame {
                 entriesTableModel.addRow(row);
             }
 
-            int count = currentFile.getEntries().size();
             if (filterStartDate != null && filterEndDate != null) {
-                statusLabel.setText(String.format("File: %s | Entries: %d (filtered)", 
-                    currentFile.getProjectName(), entriesTableModel.getRowCount()));
+                statusLabel.setText(String.format("Entries: %d (filtered from %d files)", 
+                    entriesTableModel.getRowCount(), loadedFiles.size()));
             } else {
-                statusLabel.setText(String.format("File: %s | Entries: %d", 
-                    currentFile.getProjectName(), count));
+                statusLabel.setText(String.format("Entries: %d (from %d files)", 
+                    entriesTableModel.getRowCount(), loadedFiles.size()));
             }
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Error loading file: " + e.getMessage(), 
@@ -335,19 +344,41 @@ public class MainFrame extends JFrame {
     
     private void updateDetailPanel(int row) {
         if (row >= 0 && row < entriesTableModel.getRowCount()) {
-            ActivityEntry entry = currentFile.getEntries().get(row);
-            StringBuilder sb = new StringBuilder();
-            sb.append("Timestamp: ").append(entry.getTimestampFormatted()).append("\n");
-            sb.append("Activity Type: ").append(entry.getActivityType()).append("\n");
-            sb.append("Description: ").append(entry.getDescription()).append("\n");
-            sb.append("Status: ").append(entry.getStatus()).append("\n");
-            // Word-wrap comment - replace \n with actual newlines
-            String comment = entry.getComment().replace("\\n", "\n");
-            sb.append("Comment: ").append(comment).append("\n");
-            sb.append(String.format("Time Spent: %.3f days (%.2f hours)", 
-                entry.getTimeSpentDays(), entry.getTimeSpentHours()));
-            detailTextArea.setText(sb.toString());
+            // Find the entry from all loaded files
+            ActivityEntry entry = findEntryAtRow(row);
+            if (entry != null) {
+                StringBuilder sb = new StringBuilder();
+                sb.append("Timestamp: ").append(entry.getTimestampFormatted()).append("\n");
+                sb.append("Activity Type: ").append(entry.getActivityType()).append("\n");
+                sb.append("Description: ").append(entry.getDescription()).append("\n");
+                sb.append("Status: ").append(entry.getStatus()).append("\n");
+                // Word-wrap comment - replace \n with actual newlines
+                String comment = entry.getComment().replace("\\n", "\n");
+                sb.append("Comment: ").append(comment).append("\n");
+                sb.append(String.format("Time Spent: %.3f days (%.2f hours)", 
+                    entry.getTimeSpentDays(), entry.getTimeSpentHours()));
+                detailTextArea.setText(sb.toString());
+            }
         }
+    }
+    
+    private ActivityEntry findEntryAtRow(int row) {
+        List<ActivityEntry> allEntries = new ArrayList<>();
+        for (CSVFile file : loadedFiles) {
+            allEntries.addAll(file.getEntries());
+        }
+        
+        if (filterStartDate != null && filterEndDate != null) {
+            allEntries.removeIf(entry -> {
+                java.time.LocalDate entryDate = entry.getTimestamp().toLocalDate();
+                return entryDate.isBefore(filterStartDate) || entryDate.isAfter(filterEndDate);
+            });
+        }
+        
+        if (row >= 0 && row < allEntries.size()) {
+            return allEntries.get(row);
+        }
+        return null;
     }
     
     private void showNewEntryDialog() {
@@ -407,39 +438,51 @@ public class MainFrame extends JFrame {
 
     private void showEditDialog() {
         int selectedRow = entriesTable.getSelectedRow();
-        if (selectedRow >= 0 && currentFile != null) {
-            ActivityEntry entry = currentFile.getEntries().get(selectedRow);
-            new EditDeleteDialog(MainFrame.this, entry, currentFile).setVisible(true);
-            // Refresh the table
-            loadSelectedFile(currentFile.getFilePath());
-        } else {
-            JOptionPane.showMessageDialog(this, "Please select an entry to edit", 
-                "No Entry Selected", JOptionPane.WARNING_MESSAGE);
+        if (selectedRow >= 0) {
+            ActivityEntry entry = findEntryAtRow(selectedRow);
+            if (entry != null) {
+                new EditDeleteDialog(MainFrame.this, entry, currentFile).setVisible(true);
+                // Refresh the table
+                loadSelectedFile(currentFile.getFilePath());
+            } else {
+                JOptionPane.showMessageDialog(this, "Please select an entry to edit", 
+                    "No Entry Selected", JOptionPane.WARNING_MESSAGE);
+            }
         }
     }
     
     private void showDeleteConfirmation() {
         int selectedRow = entriesTable.getSelectedRow();
-        if (selectedRow >= 0 && currentFile != null) {
-            ActivityEntry entry = currentFile.getEntries().get(selectedRow);
-            String message = String.format("Are you sure you want to delete this entry?\n\n" +
-                "Type: %s\nDescription: %s", 
-                entry.getActivityType(), entry.getDescription());
-            int result = JOptionPane.showConfirmDialog(this, message, 
-                "Confirm Delete", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-            if (result == JOptionPane.YES_OPTION) {
-                currentFile.getEntries().remove(selectedRow);
-                try {
-                    currentFile.saveToFile();
-                    loadSelectedFile(currentFile.getFilePath());
-                } catch (Exception e) {
-                    JOptionPane.showMessageDialog(this, "Error saving file: " + e.getMessage(), 
-                        "Error", JOptionPane.ERROR_MESSAGE);
+        if (selectedRow >= 0) {
+            ActivityEntry entry = findEntryAtRow(selectedRow);
+            if (entry != null) {
+                String message = String.format("Are you sure you want to delete this entry?\n\n" +
+                    "Type: %s\nDescription: %s", 
+                    entry.getActivityType(), entry.getDescription());
+                int result = JOptionPane.showConfirmDialog(this, message, 
+                    "Confirm Delete", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+                if (result == JOptionPane.YES_OPTION) {
+                    // Find which file contains this entry
+                    for (CSVFile file : loadedFiles) {
+                        if (file.getEntries().removeIf(e -> 
+                            e.getTimestamp().equals(entry.getTimestamp()) && 
+                            e.getDescription().equals(entry.getDescription()))) {
+                            try {
+                                file.saveToFile();
+                                loadSelectedFile(currentFile.getFilePath());
+                                return;
+                            } catch (Exception e) {
+                                JOptionPane.showMessageDialog(this, "Error saving file: " + e.getMessage(), 
+                                    "Error", JOptionPane.ERROR_MESSAGE);
+                                return;
+                            }
+                        }
+                    }
                 }
+            } else {
+                JOptionPane.showMessageDialog(this, "Please select an entry to delete", 
+                    "No Entry Selected", JOptionPane.WARNING_MESSAGE);
             }
-        } else {
-            JOptionPane.showMessageDialog(this, "Please select an entry to delete", 
-                "No Entry Selected", JOptionPane.WARNING_MESSAGE);
         }
     }
 }
