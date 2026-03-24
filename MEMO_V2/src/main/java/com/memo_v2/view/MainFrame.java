@@ -367,7 +367,10 @@ public class MainFrame extends JFrame {
     
     private void showDailySummary() {
         if (currentFile != null) {
-            new SummaryDialog(MainFrame.this, currentFile, loadedFiles).setVisible(true);
+            SummaryDialog dialog = new SummaryDialog(MainFrame.this, currentFile, loadedFiles);
+            dialog.setInitialSummaryType("Daily");
+            dialog.setFilterActive(filterStartDate != null);
+            dialog.setVisible(true);
         } else {
             JOptionPane.showMessageDialog(this, "Please select a file first", 
                 "No File Selected", JOptionPane.WARNING_MESSAGE);

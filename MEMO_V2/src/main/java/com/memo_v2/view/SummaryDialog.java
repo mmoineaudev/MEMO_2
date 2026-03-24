@@ -19,7 +19,8 @@ public class SummaryDialog extends JDialog {
     private JTextArea resultsTextArea;
     private List<CSVFile> allFiles;
     private CSVFile currentFile;
-    private String initialSummaryType = "Timeframe";
+    private String initialSummaryType = "Daily";
+    private boolean filterActive = false;
 
     public SummaryDialog(Frame owner, CSVFile currentFile, List<CSVFile> allFiles) {
         super(owner, "Activity Summary", true);
@@ -34,6 +35,10 @@ public class SummaryDialog extends JDialog {
 
     public void setInitialSummaryType(String type) {
         this.initialSummaryType = type;
+    }
+
+    public void setFilterActive(boolean active) {
+        this.filterActive = active;
     }
 
     private void createUI() {
@@ -53,6 +58,10 @@ public class SummaryDialog extends JDialog {
 
         // Date range selector (hidden by default, shown for Timeframe)
         dateRangeCombo = new JComboBox<>();
+        String[] dateRanges = {"Last 7 days", "Last 14 days", "Last 30 days", "Current week", "Current month", "All time"};
+        for (String range : dateRanges) {
+            dateRangeCombo.addItem(range);
+        }
         dateRangeCombo.addActionListener(e -> {
             if ("Timeframe".equals(summaryTypeCombo.getSelectedItem())) {
                 dateRangeCombo.setVisible(true);
@@ -102,25 +111,38 @@ public class SummaryDialog extends JDialog {
         resultsTextArea.setText(sb.toString());
     }
 
+    public JTextArea getResultsTextArea() {
+        return resultsTextArea;
+    }
+
     private String generateDailySummary() {
         StringBuilder sb = new StringBuilder();
         sb.append("=".repeat(60)).append("\n");
         sb.append("DAILY ACTIVITY SUMMARY\n").append(currentFile.getProjectName()).append("\n");
         sb.append("=".repeat(60)).append("\n\n");
 
+        // Determine which files to include
+        List<CSVFile> filesToInclude = getFilesForSummary();
+
         // Group by date, then by description within each date
         Map<LocalDate, Map<String, Double>> dailyByDesc = new HashMap<>();
 
-        for (ActivityEntry entry : currentFile.getEntries()) {
-            LocalDate date = entry.getTimestamp().toLocalDate();
-            String desc = entry.getDescription();
-            double time = entry.getTimeSpentDays();
+        for (CSVFile file : filesToInclude) {
+            for (ActivityEntry entry : file.getEntries()) {
+                LocalDate date = entry.getTimestamp().toLocalDate();
+                String desc = entry.getDescription();
+                double time = entry.getTimeSpentDays();
 
-            Map<String, Double> dayMap = dailyByDesc.computeIfAbsent(date, k -> new HashMap<>());
-            dayMap.put(desc, dayMap.getOrDefault(desc, 0.0) + time);
+                Map<String, Double> dayMap = dailyByDesc.computeIfAbsent(date, k -> new HashMap<>());
+                dayMap.put(desc, dayMap.getOrDefault(desc, 0.0) + time);
+            }
         }
 
-        for (LocalDate date : dailyByDesc.keySet()) {
+        // Sort dates
+        List<LocalDate> sortedDates = new ArrayList<>(dailyByDesc.keySet());
+        Collections.sort(sortedDates);
+
+        for (LocalDate date : sortedDates) {
             sb.append("\n").append(date).append(":\n");
             double total = 0.0;
             Map<String, Double> descMap = dailyByDesc.get(date);
@@ -148,10 +170,13 @@ public class SummaryDialog extends JDialog {
         sb.append("MONTHLY ACTIVITY SUMMARY\n").append(currentFile.getProjectName()).append("\n");
         sb.append("=".repeat(60)).append("\n\n");
 
+        // Monthly summary always includes all files
+        List<CSVFile> filesToInclude = allFiles;
+
         // Group by month, then by description within each month
         Map<String, Map<String, Double>> monthlyByDesc = new HashMap<>();
 
-        for (CSVFile file : allFiles) {
+        for (CSVFile file : filesToInclude) {
             for (ActivityEntry entry : file.getEntries()) {
                 LocalDate date = entry.getTimestamp().toLocalDate();
                 String desc = entry.getDescription();
@@ -165,7 +190,11 @@ public class SummaryDialog extends JDialog {
             }
         }
 
-        for (String monthKey : monthlyByDesc.keySet()) {
+        // Sort months
+        List<String> sortedMonths = new ArrayList<>(monthlyByDesc.keySet());
+        Collections.sort(sortedMonths);
+
+        for (String monthKey : sortedMonths) {
             sb.append("\n").append(monthKey).append(":\n");
             double total = 0.0;
             Map<String, Double> descMap = monthlyByDesc.get(monthKey);
@@ -247,7 +276,11 @@ public class SummaryDialog extends JDialog {
             }
         }
 
-        for (LocalDate date : dailyByDesc.keySet()) {
+        // Sort dates
+        List<LocalDate> sortedDates = new ArrayList<>(dailyByDesc.keySet());
+        Collections.sort(sortedDates);
+
+        for (LocalDate date : sortedDates) {
             sb.append("\n").append(date).append(":\n");
             double total = 0.0;
             Map<String, Double> descMap = dailyByDesc.get(date);
@@ -267,5 +300,49 @@ public class SummaryDialog extends JDialog {
         }
 
         return sb.toString();
+    }
+
+     /**
+     * Returns the list of files to include in summary based on current state.
+     * If filter is active, includes all files. Otherwise, includes only currentFile.
+     */
+    private List<CSVFile> getFilesForSummary() {
+        if (filterActive) {
+            return allFiles;
+        }
+        return List.of(currentFile);
+    }
+
+    // Testing methods
+    public String getDailySummary() {
+        return generateDailySummary();
+    }
+
+    public String getMonthlySummary() {
+        return generateMonthlySummary();
+    }
+
+    public String getTimeframeSummary() {
+        return generateTimeframeSummary();
+    }
+
+    public void setDateRangeComboSelectedIndex(int index) {
+        dateRangeCombo.setSelectedIndex(index);
+    }
+
+    public int getDateRangeComboItemCount() {
+        return dateRangeCombo.getItemCount();
+    }
+
+    public String getDateRangeComboItemAt(int index) {
+        return (String) dateRangeCombo.getItemAt(index);
+    }
+
+    public int getSummaryTypeItemCount() {
+        return summaryTypeCombo.getItemCount();
+    }
+
+    public String getSummaryTypeItemAt(int index) {
+        return (String) summaryTypeCombo.getItemAt(index);
     }
 }
