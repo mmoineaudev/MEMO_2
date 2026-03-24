@@ -367,7 +367,7 @@ public class MainFrame extends JFrame {
     
     private void showDailySummary() {
         if (currentFile != null) {
-            new SummaryDialog(MainFrame.this, currentFile).setVisible(true);
+            new SummaryDialog(MainFrame.this, currentFile, loadedFiles).setVisible(true);
         } else {
             JOptionPane.showMessageDialog(this, "Please select a file first", 
                 "No File Selected", JOptionPane.WARNING_MESSAGE);
@@ -378,19 +378,18 @@ public class MainFrame extends JFrame {
         if (currentFile != null) {
             // Ensure entries are filtered by date range
             loadSelectedFile(currentFile.getFilePath());
-            SummaryDialog dialog = new SummaryDialog(this, currentFile);
-            dialog.setInitialSummaryType("Daily");
+            SummaryDialog dialog = new SummaryDialog(this, currentFile, loadedFiles);
+            dialog.setInitialSummaryType("Timeframe");
             dialog.setVisible(true);
         } else {
             JOptionPane.showMessageDialog(this, "Please select a file first", "No File Selected", JOptionPane.WARNING_MESSAGE);
         }
     }
-    }
     
-   }\n    private void showSettingsDialog() {
+    private void showSettingsDialog() {
         new SettingsDialog(MainFrame.this).setVisible(true);
     }
-
+    
     private void showDateRangeDialog() {
         DateRangeDialog dialog = new DateRangeDialog(MainFrame.this);
         dialog.setVisible(true);
@@ -402,7 +401,7 @@ public class MainFrame extends JFrame {
             loadSelectedFile(currentFile.getFilePath());
         }
     }
-    
+
     private void showEditDialog() {
         int selectedRow = entriesTable.getSelectedRow();
         if (selectedRow >= 0 && currentFile != null) {

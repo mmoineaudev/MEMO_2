@@ -15,13 +15,16 @@ import java.util.Map;
 
 public class SummaryDialog extends JDialog {
     private JComboBox<String> summaryTypeCombo;
+    private JComboBox<String> dateRangeCombo;
     private JTextArea resultsTextArea;
+    private List<CSVFile> allFiles;
     private CSVFile currentFile;
-    private String initialSummaryType = "Daily";
+    private String initialSummaryType = "Timeframe";
 
-    public SummaryDialog(Frame owner, CSVFile currentFile) {
+    public SummaryDialog(Frame owner, CSVFile currentFile, List<CSVFile> allFiles) {
         super(owner, "Activity Summary", true);
         this.currentFile = currentFile;
+        this.allFiles = allFiles;
         setSize(700, 600);
         setLocationRelativeTo(owner);
         setModal(true);
@@ -40,11 +43,28 @@ public class SummaryDialog extends JDialog {
         // Summary type selection
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         topPanel.add(new JLabel("Summary Type:"));
-        String[] types = {"Daily", "Weekly"};
+        String[] types = {"Daily", "Monthly", "Timeframe"};
         summaryTypeCombo = new JComboBox<>(types);
-        int initialIndex = "Weekly".equals(initialSummaryType) ? 1 : 0;
+        int initialIndex = 0;
+        if ("Monthly".equals(initialSummaryType)) initialIndex = 1;
+        if ("Timeframe".equals(initialSummaryType)) initialIndex = 2;
         summaryTypeCombo.setSelectedIndex(initialIndex);
         topPanel.add(summaryTypeCombo);
+
+        // Date range selector (hidden by default, shown for Timeframe)
+        dateRangeCombo = new JComboBox<>();
+        dateRangeCombo.addActionListener(e -> {
+            if ("Timeframe".equals(summaryTypeCombo.getSelectedItem())) {
+                dateRangeCombo.setVisible(true);
+                dateRangeCombo.setEnabled(true);
+            } else {
+                dateRangeCombo.setVisible(false);
+                dateRangeCombo.setEnabled(false);
+            }
+        });
+        topPanel.add(dateRangeCombo);
+        dateRangeCombo.setVisible(false);
+        dateRangeCombo.setEnabled(false);
         mainPanel.add(topPanel, BorderLayout.NORTH);
 
         // Results
@@ -73,8 +93,10 @@ public class SummaryDialog extends JDialog {
 
         if ("Daily".equals(type)) {
             sb.append(generateDailySummary());
+        } else if ("Monthly".equals(type)) {
+            sb.append(generateMonthlySummary());
         } else {
-            sb.append(generateWeeklySummary());
+            sb.append(generateTimeframeSummary());
         }
 
         resultsTextArea.setText(sb.toString());
@@ -93,7 +115,7 @@ public class SummaryDialog extends JDialog {
             LocalDate date = entry.getTimestamp().toLocalDate();
             String desc = entry.getDescription();
             double time = entry.getTimeSpentDays();
-            
+
             Map<String, Double> dayMap = dailyByDesc.computeIfAbsent(date, k -> new HashMap<>());
             dayMap.put(desc, dayMap.getOrDefault(desc, 0.0) + time);
         }
@@ -102,60 +124,145 @@ public class SummaryDialog extends JDialog {
             sb.append("\n").append(date).append(":\n");
             double total = 0.0;
             Map<String, Double> descMap = dailyByDesc.get(date);
-            
+
             // Sort descriptions alphabetically
             List<String> sortedDeps = new ArrayList<>(descMap.keySet());
             Collections.sort(sortedDeps);
-            
+
             for (String desc : sortedDeps) {
                 double timeDays = descMap.get(desc);
                 sb.append("  ").append(desc).append(": ");
                 sb.append(String.format("%.3f days (%.2f hours)\n", timeDays, timeDays * 7.75));
                 total += timeDays;
             }
-            
+
             sb.append("  Total: ").append(String.format("%.3f days (%.2f hours)", total, total * 7.75)).append("\n");
         }
 
         return sb.toString();
     }
 
-    private String generateWeeklySummary() {
+    private String generateMonthlySummary() {
         StringBuilder sb = new StringBuilder();
         sb.append("=".repeat(60)).append("\n");
-        sb.append("WEEKLY ACTIVITY SUMMARY\n").append(currentFile.getProjectName()).append("\n");
+        sb.append("MONTHLY ACTIVITY SUMMARY\n").append(currentFile.getProjectName()).append("\n");
         sb.append("=".repeat(60)).append("\n\n");
 
-        // Group by week, then by description within each week
-        Map<String, Map<String, Double>> weeklyByDesc = new HashMap<>();
+        // Group by month, then by description within each month
+        Map<String, Map<String, Double>> monthlyByDesc = new HashMap<>();
 
-        for (ActivityEntry entry : currentFile.getEntries()) {
-            LocalDate date = entry.getTimestamp().toLocalDate();
-            String desc = entry.getDescription();
-            double time = entry.getTimeSpentDays();
-            int weekNum = (date.getDayOfYear() - 1) / 7 + 1;
-            String weekKey = date.getYear() + "-W" + String.format("%02d", weekNum);
-            
-            Map<String, Double> weekMap = weeklyByDesc.computeIfAbsent(weekKey, k -> new HashMap<>());
-            weekMap.put(desc, weekMap.getOrDefault(desc, 0.0) + time);
+        for (CSVFile file : allFiles) {
+            for (ActivityEntry entry : file.getEntries()) {
+                LocalDate date = entry.getTimestamp().toLocalDate();
+                String desc = entry.getDescription();
+                double time = entry.getTimeSpentDays();
+
+                // Use year-month key (e.g., "2024-03")
+                String monthKey = date.getYear() + "-" + String.format("%02d", date.getMonthValue());
+
+                Map<String, Double> monthMap = monthlyByDesc.computeIfAbsent(monthKey, k -> new HashMap<>());
+                monthMap.put(desc, monthMap.getOrDefault(desc, 0.0) + time);
+            }
         }
 
-        for (String weekKey : weeklyByDesc.keySet()) {
-            sb.append("\n").append(weekKey).append(":\n");
+        for (String monthKey : monthlyByDesc.keySet()) {
+            sb.append("\n").append(monthKey).append(":\n");
             double total = 0.0;
-            Map<String, Double> descMap = weeklyByDesc.get(weekKey);
-            
+            Map<String, Double> descMap = monthlyByDesc.get(monthKey);
+
             // Sort descriptions alphabetically
             List<String> sortedDeps = new ArrayList<>(descMap.keySet());
             Collections.sort(sortedDeps);
-            
+
             for (String desc : sortedDeps) {
                 double timeDays = descMap.get(desc);
                 sb.append("  ").append(desc).append(": ");
                 sb.append(String.format("%.3f days (%.2f hours)\n", timeDays, timeDays * 7.75));
                 total += timeDays;
             }
-            
+
+            sb.append("  Total: ").append(String.format("%.3f days (%.2f hours)", total, total * 7.75)).append("\n");
+        }
+
+        return sb.toString();
+    }
+
+    private String generateTimeframeSummary() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("=".repeat(60)).append("\n");
+        sb.append("TIMEFRAME ACTIVITY SUMMARY\n").append(currentFile.getProjectName()).append("\n");
+        sb.append("=".repeat(60)).append("\n\n");
+
+        // Determine the date range from the selected option
+        int selectedIndex = dateRangeCombo.getSelectedIndex();
+        LocalDate startDate, endDate;
+
+        switch (selectedIndex) {
+            case 0: // Last 7 days
+                endDate = LocalDate.now();
+                startDate = endDate.minusDays(7);
+                sb.append("Range: ").append(startDate).append(" to ").append(endDate).append("\n\n");
+                break;
+            case 1: // Last 14 days
+                endDate = LocalDate.now();
+                startDate = endDate.minusDays(14);
+                sb.append("Range: ").append(startDate).append(" to ").append(endDate).append("\n\n");
+                break;
+            case 2: // Last 30 days
+                endDate = LocalDate.now();
+                startDate = endDate.minusDays(30);
+                sb.append("Range: ").append(startDate).append(" to ").append(endDate).append("\n\n");
+                break;
+            case 3: // Current week
+                LocalDate today = LocalDate.now();
+                LocalDate startOfWeek = today.minusDays(today.getDayOfWeek().getValue() - 1);
+                startDate = startOfWeek;
+                endDate = startOfWeek.plusDays(6);
+                sb.append("Range: ").append(startDate).append(" to ").append(endDate).append("\n\n");
+                break;
+            case 4: // Current month
+                endDate = LocalDate.now();
+                startDate = endDate.withDayOfMonth(1);
+                sb.append("Range: ").append(startDate).append(" to ").append(endDate).append("\n\n");
+                break;
+            default: // All time
+                sb.append("Range: All entries\n\n");
+                startDate = LocalDate.MIN;
+                endDate = LocalDate.MAX;
+        }
+
+        // Group by date, then by description within each date, filtering by timeframe
+        Map<LocalDate, Map<String, Double>> dailyByDesc = new HashMap<>();
+
+        for (CSVFile file : allFiles) {
+            for (ActivityEntry entry : file.getEntries()) {
+                LocalDate date = entry.getTimestamp().toLocalDate();
+                if (!date.isBefore(startDate) && !date.isAfter(endDate)) {
+                    String desc = entry.getDescription();
+                    double time = entry.getTimeSpentDays();
+
+                    Map<String, Double> dayMap = dailyByDesc.computeIfAbsent(date, k -> new HashMap<>());
+                    dayMap.put(desc, dayMap.getOrDefault(desc, 0.0) + time);
+                }
+            }
+        }
+
+        for (LocalDate date : dailyByDesc.keySet()) {
+            sb.append("\n").append(date).append(":\n");
+            double total = 0.0;
+            Map<String, Double> descMap = dailyByDesc.get(date);
+
+            // Sort descriptions alphabetically
+            List<String> sortedDeps = new ArrayList<>(descMap.keySet());
+            Collections.sort(sortedDeps);
+
+            for (String desc : sortedDeps) {
+                double timeDays = descMap.get(desc);
+                sb.append("  ").append(desc).append(": ");
+                sb.append(String.format("%.3f days (%.2f hours)\n", timeDays, timeDays * 7.75));
+                total += timeDays;
+            }
+
             sb.append("  Total: ").append(String.format("%.3f days (%.2f hours)", total, total * 7.75)).append("\n");
         }
 
