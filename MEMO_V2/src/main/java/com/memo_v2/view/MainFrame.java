@@ -260,7 +260,15 @@ public class MainFrame extends JFrame {
         if (files != null && files.length > 0) {
             List<File> fileList = new ArrayList<>();
             for (File file : files) {
-                fileList.add(file);
+                // Apply date range filter to file list if active
+                if (filterStartDate != null && filterEndDate != null) {
+                    LocalDate fileDate = CSVFile.parseDateFromFilename(file.getName());
+                    if (fileDate != null && !fileDate.isBefore(filterStartDate) && !fileDate.isAfter(filterEndDate)) {
+                        fileList.add(file);
+                    }
+                } else {
+                    fileList.add(file);
+                }
             }
             
             // Sort by date descending, with today's file always first

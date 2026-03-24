@@ -54,6 +54,22 @@ public class CSVFile {
         return null;
     }
     
+    /**
+     * Parse date from filename like "MEMO_tracking_20260324.csv"
+     */
+    public static LocalDate parseDateFromFilename(String filename) {
+        if (filename == null || filename.isEmpty()) return null;
+        Matcher matcher = FILENAME_PATTERN.matcher(filename);
+        if (matcher.matches()) {
+            try {
+                return LocalDate.parse(matcher.group(2), DATE_FORMATTER);
+            } catch (Exception e) {
+                return null;
+            }
+        }
+        return null;
+    }
+    
     public void loadFromFile() throws IOException {
         entries.clear();
         File file = new File(filePath);
