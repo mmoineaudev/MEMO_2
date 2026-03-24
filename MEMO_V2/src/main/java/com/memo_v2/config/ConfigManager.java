@@ -12,12 +12,19 @@ public class ConfigManager {
     public static String getStorageDirectory() {
         try {
             File configFile = new File(CONFIG_FILE);
-            if (configFile.exists()) {
+            if (!configFile.exists()) {
+                // Create default config file
                 Properties props = new Properties();
-                try (InputStream input = new FileInputStream(configFile)) {
-                    props.load(input);
-                    return props.getProperty(STORAGE_DIR_KEY, "./log");
+                props.setProperty(STORAGE_DIR_KEY, "./log");
+                try (OutputStream output = new FileOutputStream(configFile)) {
+                    props.store(output, "MEMO_V2 Configuration");
                 }
+            }
+            
+            Properties props = new Properties();
+            try (InputStream input = new FileInputStream(configFile)) {
+                props.load(input);
+                return props.getProperty(STORAGE_DIR_KEY, "./log");
             }
         } catch (Exception e) {
             System.err.println("Failed to load config: " + e.getMessage());

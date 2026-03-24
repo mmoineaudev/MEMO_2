@@ -1,3 +1,0 @@
-timestamp;activity_type;description;status;comment;time_spent_days
-22/03/2026 17:00;DEV;Test multiline comment;TODO;Line one\nLine two\nLine three;0.250000
-22/03/2026 17:01;TEST;Single line comment;DONE;Just one line;0.125000
