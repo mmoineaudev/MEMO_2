@@ -20,6 +20,7 @@ public class SummaryDialogTest {
 
     private CSVFile currentFile;
     private List<CSVFile> allFiles;
+    private SummaryDialog dialog;
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -35,6 +36,9 @@ public class SummaryDialogTest {
             new ActivityEntry(LocalDateTime.of(2024, 3, 20, 9, 0), "Development", "Coding", "In Progress", "Test", 0.125));
         
         allFiles = List.of(currentFile, file2, file3);
+        
+        // Create dialog with null owner for testing
+        dialog = new SummaryDialog(null, currentFile, allFiles);
     }
 
     private CSVFile createTestFile(String fileName, ActivityEntry... entries) throws Exception {
@@ -51,7 +55,7 @@ public class SummaryDialogTest {
     @Test
     @Order(1)
     public void testDailySummaryShowsCurrentFileOnly() throws Exception {
-        SummaryDialog dialog = new SummaryDialog(null, currentFile, allFiles);
+        dialog.setFilterActive(false); // No filter active
         
         String result = dialog.getDailySummary();
         
@@ -64,9 +68,34 @@ public class SummaryDialogTest {
 
     @Test
     @Order(2)
-    public void testMonthlySummaryShowsAllFiles() throws Exception {
-        SummaryDialog dialog = new SummaryDialog(null, currentFile, allFiles);
+    public void testDailySummaryWithFilterShowsAllFiles() throws Exception {
+        dialog.setFilterActive(true); // Filter active
         
+        String result = dialog.getDailySummary();
+        
+        // Daily summary with filter should show entries from all files
+        assertTrue(result.contains("DAILY ACTIVITY SUMMARY"));
+        assertTrue(result.contains("2024-03-15"));
+        assertTrue(result.contains("2024-03-10"));
+        assertTrue(result.contains("2024-03-20"));
+    }
+
+    @Test
+    @Order(3)
+    public void testWeeklySummaryShowsAllFiles() throws Exception {
+        String result = dialog.getWeeklySummary();
+        
+        // Weekly summary should show entries from all files grouped by week
+        assertTrue(result.contains("WEEKLY ACTIVITY SUMMARY"));
+        // March 10, 2024 = Week 10, March 15, 2024 = Week 11, March 20, 2024 = Week 12
+        assertTrue(result.contains("2024-W10")); // Week 10
+        assertTrue(result.contains("2024-W11")); // Week 11
+        assertTrue(result.contains("2024-W12")); // Week 12
+    }
+
+    @Test
+    @Order(4)
+    public void testMonthlySummaryShowsAllFiles() throws Exception {
         String result = dialog.getMonthlySummary();
         
         // Monthly summary should show entries from all files grouped by month
@@ -77,9 +106,8 @@ public class SummaryDialogTest {
     }
 
     @Test
-    @Order(3)
+    @Order(5)
     public void testTimeframeSummaryWithDateRange() throws Exception {
-        SummaryDialog dialog = new SummaryDialog(null, currentFile, allFiles);
         dialog.setDateRangeComboSelectedIndex(0); // Last 7 days
         
         String result = dialog.getTimeframeSummary();
@@ -91,32 +119,28 @@ public class SummaryDialogTest {
     }
 
     @Test
-    @Order(4)
+    @Order(6)
     public void testDateRangeComboPopulated() throws Exception {
-        SummaryDialog dialog = new SummaryDialog(null, currentFile, allFiles);
-        
         assertEquals(6, dialog.getDateRangeComboItemCount(), "Should have 6 date range options");
         assertEquals("Last 7 days", dialog.getDateRangeComboItemAt(0));
         assertEquals("All time", dialog.getDateRangeComboItemAt(5));
     }
 
     @Test
-    @Order(5)
+    @Order(7)
     public void testSummaryTypeOptions() throws Exception {
-        SummaryDialog dialog = new SummaryDialog(null, currentFile, allFiles);
+        String[] expectedTypes = {"Daily", "Weekly", "Monthly", "Timeframe"};
         
-        String[] expectedTypes = {"Daily", "Monthly", "Timeframe"};
-        
-        assertEquals(3, dialog.getSummaryTypeItemCount());
+        assertEquals(4, dialog.getSummaryTypeItemCount(), "Should have 4 summary types");
         for (int i = 0; i < expectedTypes.length; i++) {
             assertEquals(expectedTypes[i], dialog.getSummaryTypeItemAt(i));
         }
     }
 
     @Test
-    @Order(6)
+    @Order(8)
     public void testDailySummaryShowsCorrectFormat() throws Exception {
-        SummaryDialog dialog = new SummaryDialog(null, currentFile, allFiles);
+        dialog.setFilterActive(false); // No filter
         
         String result = dialog.getDailySummary();
         
@@ -127,9 +151,19 @@ public class SummaryDialogTest {
     }
 
     @Test
-    @Order(7)
+    @Order(9)
+    public void testWeeklySummaryShowsCorrectFormat() throws Exception {
+        String result = dialog.getWeeklySummary();
+        
+        // Check for proper formatting
+        assertTrue(result.contains("days"));
+        assertTrue(result.contains("hours"));
+        assertTrue(result.contains("Total:"));
+    }
+
+    @Test
+    @Order(10)
     public void testTimeframeSummaryShowsCorrectMonth() throws Exception {
-        SummaryDialog dialog = new SummaryDialog(null, currentFile, allFiles);
         dialog.setDateRangeComboSelectedIndex(4); // Current month
         
         String result = dialog.getTimeframeSummary();

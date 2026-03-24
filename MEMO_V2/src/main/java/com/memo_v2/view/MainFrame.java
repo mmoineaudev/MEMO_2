@@ -255,6 +255,7 @@ public class MainFrame extends JFrame {
             }
         }
         
+        // Scan storage directory for tracking files
         File[] files = storageDir.listFiles((dir, name) -> name.matches(".*_tracking_\\d{8}\\.csv"));
         if (files != null && files.length > 0) {
             List<File> fileList = new ArrayList<>();
@@ -290,6 +291,8 @@ public class MainFrame extends JFrame {
                 fileListView.setSelectedIndex(selectedIndex);
                 loadSelectedFile(loadedFiles.get(0).getFilePath());
             }
+        } else {
+            System.err.println("DEBUG MainFrame: No files found in " + storageDir.getAbsolutePath());
         }
     }
     
@@ -396,10 +399,9 @@ public class MainFrame extends JFrame {
         new SearchDialog(MainFrame.this).setVisible(true);
     }
     
-    private void showDailySummary() {
+   private void showDailySummary() {
         if (currentFile != null) {
             SummaryDialog dialog = new SummaryDialog(MainFrame.this, currentFile, loadedFiles);
-            dialog.setInitialSummaryType("Daily");
             dialog.setFilterActive(filterStartDate != null);
             dialog.setVisible(true);
         } else {
@@ -408,12 +410,12 @@ public class MainFrame extends JFrame {
         }
     }
 
-   private void showDateRangeSummary() {
+    private void showDateRangeSummary() {
         if (currentFile != null) {
             // Ensure entries are filtered by date range
             loadSelectedFile(currentFile.getFilePath());
             SummaryDialog dialog = new SummaryDialog(this, currentFile, loadedFiles);
-            dialog.setInitialSummaryType("Timeframe");
+            dialog.setFilterActive(true);
             dialog.setVisible(true);
         } else {
             JOptionPane.showMessageDialog(this, "Please select a file first", "No File Selected", JOptionPane.WARNING_MESSAGE);
