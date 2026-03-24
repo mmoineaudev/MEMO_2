@@ -308,6 +308,12 @@ public class MainFrame extends JFrame {
         try {
             currentFile = new CSVFile(filePath);
             currentFile.loadFromFile();
+            
+            // Load all files in loadedFiles
+            for (CSVFile file : loadedFiles) {
+                file.loadFromFile();
+            }
+            
             entriesTableModel.setRowCount(0);
 
             List<ActivityEntry> allEntries = new ArrayList<>();
